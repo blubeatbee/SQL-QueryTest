@@ -1,0 +1,97 @@
+# This file is the top-most EditorConfig file
+# Stops EditorConfig from looking for other .editorconfig files in the folder above
+root = true
+
+
+[*]
+charset = utf-8
+
+
+[*.{json,xml,csproj}]
+end_of_line = lf
+indent_size = 2
+indent_style = space
+max_line_length = 200
+trim_trailing_whitespace = true
+
+[*.{csproj}]
+end_of_line = crlf
+indent_size = 2
+indent_style = space
+trim_trailing_whitespace = true
+
+[*.{md,mdx}]
+end_of_line = lf
+indent_size = 4
+indent_style = space
+trim_trailing_whitespace = false
+
+
+[*.{cs,csx}]
+end_of_line = crlf
+indent_size = 4
+indent_style = tab
+insert_final_newline = true
+max_line_length = 100
+trim_trailing_whitespace = true
+
+# Default everything to suggestion instead of warning
+dotnet_analyzer_diagnostic.severity = suggestion
+
+# Turn off the really noisy ones
+dotnet_style_require_accessibility_modifiers = always:none
+dotnet_style_parentheses_in_arithmetic_binary_operators = never_if_unnecessary:none
+
+# Keep a few useful ones
+dotnet_style_null_propagation = true:suggestion
+dotnet_style_coalesce_expression = true:suggestion
+dotnet_style_prefer_auto_properties = true:suggestion
+
+##########################################
+# C# Style – RELAXED
+##########################################
+
+# var usage – don't nag
+csharp_style_var_for_built_in_types = true:silent
+csharp_style_var_when_type_is_apparent = true:silent
+csharp_style_var_elsewhere = true:silent
+
+# Expression-bodied members – suggestions only
+csharp_style_expression_bodied_methods = true:suggestion
+csharp_style_expression_bodied_properties = true:suggestion
+
+# Pattern matching – suggestion only
+csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
+
+# Braces – KEEP THIS as warning (actually useful)
+csharp_prefer_braces = true:warning
+
+##########################################
+# Unnecessary code – keep helpful ones
+##########################################
+
+dotnet_diagnostic.IDE0058.severity = suggestion
+dotnet_diagnostic.IDE0059.severity = suggestion
+dotnet_diagnostic.IDE0320.severity = none
+dotnet_code_quality_unused_parameters = all:suggestion
+
+##########################################
+# Naming rules – soften them
+##########################################
+
+# Don't block builds over naming
+dotnet_naming_rule.element_rule.severity = suggestion
+dotnet_naming_rule.interface_rule.severity = suggestion
+dotnet_naming_rule.parameters_rule.severity = suggestion
+
+# Remove "error" rules completely
+dotnet_naming_rule.other_public_protected_fields_disallowed_rule.severity = none
+dotnet_naming_rule.stylecop_instance_fields_must_be_private_rule.severity = none
+
+##########################################
+# Formatting (keep, but not strict)
+##########################################
+
+csharp_new_line_before_open_brace = all
+csharp_space_after_keywords_in_control_flow_statements = true
+csharp_space_around_binary_operators = before_and_after
