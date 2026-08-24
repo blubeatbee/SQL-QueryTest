@@ -4,4 +4,4 @@ Tested out:
 - IQueryable and AsQueryable()
 - AsNoTracking()
 
-The SQL file for recreating the database is stored inside the Script folder.
+Note: The SQL file for recreating the database is stored inside the Script folder.
