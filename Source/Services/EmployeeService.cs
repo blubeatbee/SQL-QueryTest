@@ -68,35 +68,17 @@ namespace Source.Services
 			return employeeList;
 		}
 
-		public async Task<int> CountNumberOfTeachers()
+		public async Task<int> CountNumberOfEmployees(short employeeType)
 		{
 			try
 			{
-				return await this.unitOfWork.Teachers.CountByFilterAsync(t => t.Employee.IsEmployed == true);
-			}
-			catch
-			{
-				return 0;
-			}
-		}
-
-		public async Task<int> CountNumberOfAdministrators()
-		{
-			try
-			{
-				return await this.unitOfWork.Administrators.CountByFilterAsync(a => a.Employee.IsEmployed == true);
-			}
-			catch
-			{
-				return 0;
-			}
-		}
-
-		public async Task<int> CountNumberOfPrincipals()
-		{
-			try
-			{
-				return await this.unitOfWork.Principals.CountByFilterAsync(p => p.Employee.IsEmployed == true);
+				return employeeType switch
+				{
+					1 => await this.unitOfWork.Teachers.CountByFilterAsync(t => t.Employee.IsEmployed == true),
+					2 => await this.unitOfWork.Administrators.CountByFilterAsync(a => a.Employee.IsEmployed == true),
+					3 => await this.unitOfWork.Principals.CountByFilterAsync(p => p.Employee.IsEmployed == true),
+					_ => await this.unitOfWork.Employees.CountByFilterAsync(e => e.IsEmployed == true),
+				};
 			}
 			catch
 			{

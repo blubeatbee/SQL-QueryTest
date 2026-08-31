@@ -2,7 +2,6 @@ using Source.Menu.Components;
 using Source.Menu.Components.Base;
 using Source.Menu.Pages.Base;
 using Source.Services;
-using Source.Services.IServices;
 
 namespace Source.Menu.Pages
 {
@@ -39,11 +38,11 @@ namespace Source.Menu.Pages
 			return pageContent;
 		}
 
-		private async void Count()
+		private void Count()
 		{
-			this.employeeAmount["Teacher"] = this.service.CountNumberOfTeachers().Result;
-			this.employeeAmount["Administrator"] = this.service.CountNumberOfAdministrators().Result;
-			this.employeeAmount["Principal"] = this.service.CountNumberOfPrincipals().Result;
+			this.employeeAmount["Teacher"] = this.service.CountNumberOfEmployees(1).Result;
+			this.employeeAmount["Administrator"] = this.service.CountNumberOfEmployees(2).Result;
+			this.employeeAmount["Principal"] = this.service.CountNumberOfEmployees(3).Result;
 		}
 
 	}
