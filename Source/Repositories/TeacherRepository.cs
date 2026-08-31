@@ -1,45 +1,17 @@
-using Microsoft.EntityFrameworkCore;
 using Source.Data;
 using Source.Models;
 using Source.Repositories.IRepositories;
+using System.Linq.Expressions;
 
 namespace Source.Repositories
 {
-	public sealed class TeacherRepository(GymnasiumDbContext dbContext) : IRepository<Teacher, int>
+	public class TeacherRepository : Repository<int, Teacher>, IRepository<int, Teacher>, ITeacherRepository
 	{
-		private readonly GymnasiumDbContext db = dbContext;
-
-		public async Task Delete(Teacher entry)
+		public TeacherRepository(GymnasiumDbContext context) : base(context)
 		{
-			db.Teachers.Remove(entry);
-			await db.SaveChangesAsync();
-		}
-		public async Task Insert(Teacher entry)
-		{
-			db.Teachers.Add(entry);
-			await db.SaveChangesAsync();
-		}
-		public async Task Update(Teacher entry)
-		{
-			db.Teachers.Update(entry);
-			await db.SaveChangesAsync();
 		}
 
-		public async Task<bool> Exists(int id)
-		{
-			return await db.Teachers.AnyAsync(t => t.EmployeeId == id);
-		}
+		public GymnasiumDbContext GymnasiumDbContext { get { return (GymnasiumDbContext)base.Context; } }
 
-		public async Task<Teacher?> FindOne(int id)
-		{
-			var result = await db.Teachers.FirstOrDefaultAsync(t => t.EmployeeId == id);
-			return result ?? null;
-		}
-
-		public IQueryable<Teacher>? FindAll()
-		{
-			var result = db.Teachers.AsNoTracking().AsQueryable();
-			return (result == null) ? null : result;
-		}
 	}
 }

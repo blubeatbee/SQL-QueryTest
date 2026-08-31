@@ -2,50 +2,72 @@ using Microsoft.EntityFrameworkCore;
 using Source.Data;
 using Source.Models;
 using Source.Repositories.IRepositories;
+using System.Linq.Expressions;
 
 namespace Source.Repositories
 {
-	public class HumanRepository(GymnasiumDbContext dbContext) : IRepository<Human, int>
+	public class HumanRepository : Repository<int, Human>, IRepository<int, Human>, IHumanRepository
 	{
-		private readonly GymnasiumDbContext db = dbContext;
-
-		public async Task Delete(Human entry)
+		public HumanRepository(GymnasiumDbContext context) : base(context)
 		{
-			db.Humans.Remove(entry);
-			await db.SaveChangesAsync();
-		}
-		public async Task Insert(Human entry)
-		{
-			db.Humans.Add(entry);
-			await db.SaveChangesAsync();
-		}
-		public async Task Update(Human entry)
-		{
-			db.Humans.Update(entry);
-			await db.SaveChangesAsync();
 		}
 
-		public async Task<bool> Exists(int id)
-		{
-			return await db.Humans.AnyAsync(h => h.HumanId == id);
-		}
+		public GymnasiumDbContext GymnasiumDbContext { get { return (GymnasiumDbContext)base.Context; } }
 
-		public async Task<Human?> FindOne(int id)
-		{
-			var result = await db.Humans.FirstOrDefaultAsync(h => h.HumanId == id);
-			return result ?? null;
-		}
 
-		public IQueryable<Human>? FindAll()
+		public async Task<int> FindIdByFilterASync(Expression<Func<Human, bool>> predicate)
 		{
-			var result = db.Humans.AsNoTracking().AsQueryable();
-			return (result == null) ? null : result;
-		}
-
-		public async Task<int> FindId(string ssn)
-		{
-			var result = await db.Humans.FirstOrDefaultAsync(u => u.Ssn == ssn);
+			var result = await this.GymnasiumDbContext.Humans.FindAsync(predicate);
 			return result == null ? -1 : result.HumanId;
 		}
+
+		public async Task<IList<Human>> GetStudentsByFilter(Expression<Func<Human, bool>>? predicate = null)
+		{
+			var query = this.GymnasiumDbContext.Humans
+				.Where(h => h.Student != null)
+				.Include(h => h.Student);
+
+			if (predicate != null)
+			{
+				return await query.Where(predicate)
+					.AsNoTrackingWithIdentityResolution()
+					.ToListAsync();
+			}
+			return await query.AsNoTrackingWithIdentityResolution().ToListAsync();
+		}
+
+		public async Task<IList<Human>> GetEmployeesByFilterAsync(short employeeType = 0, Expression<Func<Human, bool>>? predicate = null)
+		{
+			var query = (predicate == null) ?
+				this.GymnasiumDbContext.Humans.Where(h => h.Employee != null) :
+				this.GymnasiumDbContext.Humans.Where(h => h.Employee != null).Where(predicate);
+
+			switch (employeeType)
+			{
+				default:
+					return await query.Include(h => h.Employee)
+						.AsNoTrackingWithIdentityResolution()
+						.ToListAsync();
+				case 1:
+					return await query.Where(h => h.Employee!.Teacher != null)
+						.Include(h => h.Employee)
+						.ThenInclude(h => h!.Teacher)
+						.AsNoTrackingWithIdentityResolution()
+						.ToListAsync();
+				case 2:
+					return await query.Where(h => h.Employee!.Administrator != null)
+						.Include(h => h.Employee)
+						.ThenInclude(h => h!.Administrator)
+						.AsNoTrackingWithIdentityResolution()
+						.ToListAsync();
+				case 3:
+					return await query.Where(h => h.Employee!.Principal != null)
+						.Include(h => h.Employee)
+						.ThenInclude(h => h!.Principal)
+						.AsNoTrackingWithIdentityResolution()
+						.ToListAsync();
+			}
+		}
+
 	}
 }

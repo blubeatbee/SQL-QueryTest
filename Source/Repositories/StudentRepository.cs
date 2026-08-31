@@ -5,41 +5,22 @@ using Source.Repositories.IRepositories;
 
 namespace Source.Repositories
 {
-	public class StudentRepository(GymnasiumDbContext dbContext) : IRepository<Student, int>
+	public class StudentRepository : Repository<int, Student>, IRepository<int, Student>, IStudentRepository
 	{
-		private readonly GymnasiumDbContext db = dbContext;
-
-		public async Task Delete(Student entry)
+		public StudentRepository(GymnasiumDbContext context) : base(context)
 		{
-			db.Students.Remove(entry);
-			await db.SaveChangesAsync();
-		}
-		public async Task Insert(Student entry)
-		{
-			db.Students.Add(entry);
-			await db.SaveChangesAsync();
-		}
-		public async Task Update(Student entry)
-		{
-			db.Students.Update(entry);
-			await db.SaveChangesAsync();
 		}
 
-		public async Task<bool> Exists(int id)
+		public GymnasiumDbContext GymnasiumDbContext { get { return (GymnasiumDbContext)base.Context; } }
+
+		public async Task<IList<Student>> GetStudentsWithGradesAsync()
 		{
-			return await db.Students.AnyAsync(s => s.StudentId == id);
+			var result = await this.GymnasiumDbContext.Students
+				.Include(s => s.Gradings)
+				.ThenInclude(g => g.Course)
+				.ToListAsync();
+			return result;
 		}
 
-		public async Task<Student?> FindOne(int id)
-		{
-			var result = await db.Students.FirstOrDefaultAsync(s => s.StudentId == id);
-			return result ?? null;
-		}
-
-		public IQueryable<Student>? FindAll()
-		{
-			var result = db.Students.AsNoTracking().AsQueryable();
-			return (result == null) ? null : result;
-		}
 	}
 }

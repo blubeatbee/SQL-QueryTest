@@ -1,45 +1,17 @@
-using Microsoft.EntityFrameworkCore;
 using Source.Data;
 using Source.Models;
 using Source.Repositories.IRepositories;
+using System.Linq.Expressions;
 
 namespace Source.Repositories
 {
-	public sealed class AdministratorRepository(GymnasiumDbContext dbContext) : IRepository<Administrator, int>
+	public class AdministratorRepository : Repository<int, Administrator>, IRepository<int, Administrator>, IAdministratorRepository
 	{
-		private readonly GymnasiumDbContext db = dbContext;
-
-		public async Task Delete(Administrator entry)
+		public AdministratorRepository(GymnasiumDbContext context) : base(context)
 		{
-			db.Administrators.Remove(entry);
-			await db.SaveChangesAsync();
-		}
-		public async Task Insert(Administrator entry)
-		{
-			db.Administrators.Add(entry);
-			await db.SaveChangesAsync();
-		}
-		public async Task Update(Administrator entry)
-		{
-			db.Administrators.Update(entry);
-			await db.SaveChangesAsync();
 		}
 
-		public async Task<bool> Exists(int id)
-		{
-			return await db.Administrators.AnyAsync(a => a.EmployeeId == id);
-		}
+		public GymnasiumDbContext GymnasiumDbContext { get { return (GymnasiumDbContext)base.Context; } }
 
-		public async Task<Administrator?> FindOne(int id)
-		{
-			var result = await db.Administrators.FirstOrDefaultAsync(a => a.EmployeeId == id);
-			return result ?? null;
-		}
-
-		public IQueryable<Administrator>? FindAll()
-		{
-			var result = db.Administrators.AsNoTracking().AsQueryable();
-			return (result == null) ? null : result;
-		}
 	}
 }
