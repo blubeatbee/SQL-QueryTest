@@ -19,6 +19,7 @@ namespace Source.Menu.Pages
 			new Text(),
 			new NavLink("View Students", "Students"),
 			new NavLink("View Employees", "Employees"),
+			new NavLink("View Number of Employees", "Departments"),
 			new QuitButton(),
 			]
 		);

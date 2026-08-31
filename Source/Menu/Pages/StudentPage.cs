@@ -13,6 +13,8 @@ namespace Source.Menu.Pages
 	{
 		private StudentService service = studentServices;
 
+		private Text invalidData = new Text($"Invalid Data");
+
 		protected sealed override IList<BaseComponent> PageContent { get; set; } = new List<BaseComponent>([
 			new NavLink("Return", "Students"),
 			new Text(),
@@ -34,10 +36,20 @@ namespace Source.Menu.Pages
 					$"{student.HumanId,4} | {student.Ssn.Insert(8, "-"),-12} | {student.Surname,-16} | {student.Forname,-16} | {student.Midname ?? null,-16} | " +
 					$"{student.CyearId,4}{student.ClassId,3} | {student.DateEnroll,-10} | {student.IsActive,-8} | {student.DateQuit,-10} | {student.IsGraduated,-8}"
 					));
+				pageItems.Add(new Text(
+					$"          {"ID"}: {student.HumanId}" +
+					$"         {"SSN"}: {student.Ssn.Insert(8, "-")}" +
+					$"        {"Name"}: {student.Surname}{student.Forname}{student.Midname ?? null}" +
+					$"       {"Class"}: {student.CyearId}{student.ClassId}" +
+					$" {"Enroll date"}: {student.DateEnroll}" +
+					$"   {"Quit date"}: {student.DateQuit ?? null}" +
+					$"{"Is Graduated"}: {student.IsGraduated}" +
+					$"   {"Is Active"}: {student.IsActive}"
+					));
 			}
 			catch
 			{
-				pageItems.Add(new Text($"Invalid data"));
+				pageItems.Add(this.invalidData);
 			}
 
 			return pageItems;
