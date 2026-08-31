@@ -11,8 +11,12 @@ namespace Source.Services
 
 		public async Task<EmployeeDto> GetEmployee(int id)
 		{
-			var h = await this.unitOfWork.Humans.GetAsync(id) ?? throw new ArgumentNullException();
-			var e = await this.unitOfWork.Employees.GetAsync(id) ?? throw new ArgumentNullException();
+			var h = await this.unitOfWork.Employees.GetEmployeeAsync(id);
+
+			if (h.Employee == null)
+			{
+				throw new InvalidOperationException($"Returned object has null value in property: {nameof(h.Employee)}");
+			}
 
 			var employee = new EmployeeDto
 			{
@@ -21,19 +25,19 @@ namespace Source.Services
 				Surname = h.Surname,
 				Forname = h.Forname,
 				Midname = h.Midname,
-				Role = e.Administrator != null ? "Administrator" : (e.Principal != null ? "Principal" : (e.Teacher != null ? "Teacher" : null)),
-				Salary = e.Salary,
-				DateHired = e.DateHired,
-				IsEmployed = e.IsEmployed,
-				DateQuit = e.DateQuit
+				Role = h.Employee.Administrator != null ? "Administrator" : (h.Employee.Principal != null ? "Principal" : (h.Employee.Teacher != null ? "Teacher" : null)),
+				Salary = h.Employee.Salary,
+				DateHired = h.Employee.DateHired,
+				IsEmployed = h.Employee.IsEmployed,
+				DateQuit = h.Employee.DateQuit
 			};
 
 			return employee;
 		}
 
-		public async Task<IList<EmployeeDto>> GetAllEmployees(short filter)
+		public async Task<IList<EmployeeDto>> GetAllEmployees(short employeeType)
 		{
-			var employees = await this.unitOfWork.Humans.GetEmployeesByFilterAsync(filter, h => h.Employee != null)
+			var employees = await this.unitOfWork.Employees.GetEmployeesAsync(employeeType)
 				?? throw new ArgumentNullException();
 
 			var employeeList = new List<EmployeeDto>();

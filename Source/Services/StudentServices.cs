@@ -34,10 +34,9 @@ namespace Source.Services
 
 		public async Task<IList<StudentDto>> GetAllStudents(string filter)
 		{
-			var students = await this.unitOfWork.Humans.GetStudentsByFilter(
-				string.IsNullOrWhiteSpace(filter) ?
-				null : (h => (h.Student!.CyearId + h.Student!.ClassId) == filter)
-				)
+			var students = string.IsNullOrWhiteSpace(filter) ?
+				await this.unitOfWork.Students.GetStudentsAsync() :
+				await this.unitOfWork.Students.GetStudentsAsync(h => (h.Student!.CyearId + h.Student!.ClassId) == filter)
 				?? throw new ArgumentNullException();
 
 			var list = new List<StudentDto>();
