@@ -1,29 +1,21 @@
 using Microsoft.EntityFrameworkCore;
 using Source.DTO;
 using Source.Models;
-using Source.Repositories;
+using Source.Persistent;
+using Source.Repositories.IRepositories;
 using Source.Services.IServices;
 
 namespace Source.Services
 {
-	public sealed class EmployeeService(
-		HumanRepository humanRepo,
-		EmployeeRepository employeeRepo,
-		AdministratorRepository administratorRepo,
-		PrincipalRepository principalRepo,
-		TeacherRepository teacherRepo)
+	public class EmployeeService(IUnitOfWork unitOfWork)
 		: IService, ICudService<int, EmployeeDto>
 	{
-		private readonly EmployeeRepository employeeRepo = employeeRepo;
-		private readonly HumanRepository humanRepo = humanRepo;
-		private readonly AdministratorRepository administratorRepo = administratorRepo;
-		private readonly PrincipalRepository principalRepo = principalRepo;
-		private readonly TeacherRepository teacherRepo = teacherRepo;
+		private readonly IUnitOfWork unitOfWork = unitOfWork;
 
 		public async Task<EmployeeDto> GetEmployee(int id)
 		{
-			var h = await humanRepo.FindOne(id) ?? throw new ArgumentNullException();
-			var e = await employeeRepo.FindOne(id) ?? throw new ArgumentNullException();
+			var h = await this.unitOfWork.Humans.GetAsync(id) ?? throw new ArgumentNullException();
+			var e = await this.unitOfWork.Employees.GetAsync(id) ?? throw new ArgumentNullException();
 
 			var employee = new EmployeeDto
 			{
@@ -44,72 +36,83 @@ namespace Source.Services
 
 		public async Task<IList<EmployeeDto>> GetAllEmployees(short filter)
 		{
-			var humansQuery = humanRepo.FindAll() ?? throw new ArgumentNullException();
-			var employeesQuery = employeeRepo.FindAll() ?? throw new ArgumentNullException();
+			var employees = await this.unitOfWork.Humans.GetEmployeesByFilterAsync(filter, h => h.Employee != null)
+				?? throw new ArgumentNullException();
 
-			switch (filter)
+			var employeeList = new List<EmployeeDto>();
+
+			foreach(var e in employees)
 			{
-				// Filter teachers only
-				case 1:
-					employeesQuery = employeesQuery.AsNoTracking()
-						.Where(e => e.Teacher != null)
-						.Include(e => e.Teacher);
-					break;
-				// Filter admins only
-				case 2:
-					employeesQuery = employeesQuery.AsNoTracking()
-						.Where(e => e.Administrator != null)
-						.Include(e => e.Administrator);
-					break;
-				// Filter principals only
-				case 3:
-					employeesQuery = employeesQuery.AsNoTracking()
-						.Where(e => e.Principal != null)
-						.Include(e => e.Principal);
-					break;
-
-				// Default search behaviour (shows every employees)
-				default:
-					employeesQuery = employeesQuery.AsNoTracking()
-						.Include(e => e.Teacher)
-						.Include(e => e.Administrator)
-						.Include(e => e.Principal);
-					break;
+				employeeList.Add(new EmployeeDto
+				{
+					HumanId = e.HumanId,
+					Ssn = e.Ssn,
+					Surname = e.Surname,
+					Forname = e.Forname,
+					Midname = e.Midname,
+					Role = e.Employee!.Teacher != null ?
+						"Teacher" :
+						(e.Employee!.Administrator != null ?
+							"Administrator" :
+							(e.Employee!.Principal != null ?
+								"Principal" :
+								null)),
+					Salary = e.Employee!.Salary,
+					DateHired = e.Employee!.DateHired,
+					IsEmployed = e.Employee!.IsEmployed,
+					DateQuit = e.Employee!.DateQuit,
+				});
 			}
-
-			var employees = await employeesQuery.AsNoTracking().ToListAsync();
-			var humans = await humansQuery.AsNoTracking()
-				.Where(h => h.Employee != null)
-				.ToListAsync();
-
-			var employeeList = humans.Join(employees,
-			h => h.HumanId,
-			e => e.EmployeeId,
-			(h, e) => new EmployeeDto
-			{
-				HumanId = h.HumanId,
-				Ssn = h.Ssn,
-				Surname = h.Surname,
-				Forname = h.Forname,
-				Midname = h.Midname,
-				Role = e.Teacher != null ? "Teacher" : (e.Administrator != null ? "Administrator" : (e.Principal != null ? "Principal" : null)),
-				Salary = e.Salary,
-				DateHired = e.DateHired,
-				IsEmployed = e.IsEmployed,
-				DateQuit = e.DateQuit
-			})
-			.ToList();
 
 			return employeeList;
 		}
 
+		public async Task<int> CountNumberOfTeachers()
+		{
+			try
+			{
+				return await this.unitOfWork.Teachers.CountByFilterAsync(t => t.Employee.IsEmployed == true);
+			}
+			catch
+			{
+				return 0;
+			}
+		}
+
+		public async Task<int> CountNumberOfAdministrators()
+		{
+			try
+			{
+				return await this.unitOfWork.Administrators.CountByFilterAsync(a => a.Employee.IsEmployed == true);
+			}
+			catch
+			{
+				return 0;
+			}
+		}
+
+		public async Task<int> CountNumberOfPrincipals()
+		{
+			try
+			{
+				return await this.unitOfWork.Principals.CountByFilterAsync(p => p.Employee.IsEmployed == true);
+			}
+			catch
+			{
+				return 0;
+			}
+		}
+
 		public async void CreateOneEntry(EmployeeDto newEmployee)
 		{
-			if (await humanRepo.FindId(newEmployee.Ssn) == -1)
+
+			if (await this.unitOfWork.Humans.FindIdByFilterASync(h => h.Ssn == newEmployee.Ssn &&
+				(h.Surname + h.Forname) == newEmployee.Surname + newEmployee.Forname)
+				== -1)
 			{
 				try
 				{
-					await this.humanRepo.Insert(new Human()
+					this.unitOfWork.Humans.Add(new Human()
 					{
 						Ssn = newEmployee.Ssn,
 						Surname = newEmployee.Surname,
@@ -118,9 +121,10 @@ namespace Source.Services
 						Age = newEmployee.Age,
 					});
 
-					var newId = await humanRepo.FindId(newEmployee.Ssn);
+					var newId = await this.unitOfWork.Humans.FindIdByFilterASync(h => h.Ssn == newEmployee.Ssn &&
+						(h.Surname + h.Forname) == newEmployee.Surname + newEmployee.Forname);
 
-					await this.employeeRepo.Insert(new Employee()
+					this.unitOfWork.Employees.Add(new Employee()
 					{
 						EmployeeId = newId,
 						Salary = newEmployee.Salary,
@@ -132,17 +136,19 @@ namespace Source.Services
 					switch (newEmployee.Role)
 					{
 						case "Administrator":
-							await this.administratorRepo.Insert(new Administrator() { EmployeeId = newId });
+							this.unitOfWork.Administrators.Add(new Administrator() { EmployeeId = newId });
 							break;
 						case "Principal":
-							await this.principalRepo.Insert(new Principal() { EmployeeId = newId });
+							this.unitOfWork.Principals.Add(new Principal() { EmployeeId = newId });
 							break;
 						case "Teacher":
-							await this.teacherRepo.Insert(new Teacher() { EmployeeId = newId });
+							this.unitOfWork.Teachers.Add(new Teacher() { EmployeeId = newId });
 							break;
 						default:
 							break;
 					}
+
+					_ = this.unitOfWork.Save();
 				}
 				catch
 				{
@@ -150,5 +156,6 @@ namespace Source.Services
 				}
 			}
 		}
+
 	}
 }

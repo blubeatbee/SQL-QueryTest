@@ -3,7 +3,7 @@ using Source.Menu.Components;
 using Source.Menu.Pages;
 using Source.Menu.Routing;
 using Source.Menu.UI;
-using Source.Repositories;
+using Source.Persistent;
 using Source.Services;
 
 namespace Source.Menu
@@ -13,15 +13,6 @@ namespace Source.Menu
 	/// </summary>
 	internal static class App
 	{
-		private static GymnasiumDbContext gymnasiumDbContext = null!;
-
-		private static HumanRepository humanRepo = null!;
-		private static StudentRepository studentRepo = null!;
-		private static EmployeeRepository employeeRepo = null!;
-		private static TeacherRepository teacherRepo = null!;
-		private static PrincipalRepository principalRepo = null!;
-		private static AdministratorRepository adminRepo = null!;
-
 		private static StudentService studentService = null!;
 		private static EmployeeService employeeService = null!;
 
@@ -43,34 +34,29 @@ namespace Source.Menu
 		/// <param name="dbContext">The database context. Cannot be decoupled from <see cref="GymnasiumDbContext"/>.</param>
 		internal static void Initialise(this GymnasiumDbContext dbContext)
 		{
-			App.gymnasiumDbContext = dbContext;
+			using (var unitOfWork = new UnitOfWork(dbContext))
+			{
+				App.studentService = new(unitOfWork);
+				App.employeeService = new(unitOfWork);
 
-			App.humanRepo = new(gymnasiumDbContext);
-			App.studentRepo = new(gymnasiumDbContext);
-			App.employeeRepo = new(gymnasiumDbContext);
-			App.adminRepo = new(gymnasiumDbContext);
-			App.teacherRepo = new(gymnasiumDbContext);
-			App.principalRepo = new(gymnasiumDbContext);
+				App.routes = new([
+					new Route("Title", TitlePage.Instance),
+					new Route("Students", new StudentsPage(studentService)),
+					new Route("Student", new StudentPage(studentService)),
+					new Route("NewStudent", new CreateStudentFormPage(studentService)),
+					new Route("Employees", new EmployeesPage(employeeService)),
+					new Route("Employee", new EmployeePage(employeeService)),
+					new Route("NewEmployee", new CreateEmployeeFormPage(employeeService)),
+					new Route("Departments", new SchoolDepartmentsPage(employeeService)),
+					new Route("Error", ErrorPage.Instance)
+					],
+				"Error");
 
-			App.studentService = new(studentRepo, humanRepo);
-			App.employeeService = new(humanRepo, employeeRepo, adminRepo, principalRepo, teacherRepo);
+				App.activeRoute = routes.GetRoute("Title");
 
+				Run();
+			}
 
-			App.routes = new([
-				new Route("Title", TitlePage.Instance),
-				new Route("Students", new StudentsPage(studentService)),
-				new Route("Student", new StudentPage(studentService)),
-				new Route("NewStudent", new CreateStudentFormPage(studentService)),
-				new Route("Employees", new EmployeesPage(employeeService)),
-				new Route("Employee", new EmployeePage(employeeService)),
-				new Route("NewEmployee", new CreateEmployeeFormPage(employeeService)),
-				new Route("Error", ErrorPage.Instance)
-				],
-			"Error");
-
-			App.activeRoute = routes.GetRoute("Title");
-
-			Run();
 		}
 
 		internal static void UpdateActiveRoute(string toPath)
