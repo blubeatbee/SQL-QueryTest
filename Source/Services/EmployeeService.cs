@@ -1,14 +1,11 @@
-using Microsoft.EntityFrameworkCore;
 using Source.DTO;
 using Source.Models;
 using Source.Persistent;
-using Source.Repositories.IRepositories;
 using Source.Services.IServices;
 
 namespace Source.Services
 {
-	public class EmployeeService(IUnitOfWork unitOfWork)
-		: IService, ICudService<int, EmployeeDto>
+	public class EmployeeService(IUnitOfWork unitOfWork) : IService<int, EmployeeDto>, IEmployeeService
 	{
 		private readonly IUnitOfWork unitOfWork = unitOfWork;
 
@@ -103,7 +100,7 @@ namespace Source.Services
 			}
 		}
 
-		public async void CreateOneEntry(EmployeeDto newEmployee)
+		public async void Create(EmployeeDto newEmployee)
 		{
 
 			if (await this.unitOfWork.Humans.FindIdByFilterASync(h => h.Ssn == newEmployee.Ssn &&

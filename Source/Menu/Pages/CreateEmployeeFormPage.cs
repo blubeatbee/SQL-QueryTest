@@ -11,9 +11,9 @@ namespace Source.Menu.Pages
 	///		Page for creating a new employee.
 	/// </summary>
 	/// <param name="service">The service pattern object that accesses the employee table.</param>
-	public class CreateEmployeeFormPage(ICudService<int, EmployeeDto> service) : BasePage
+	public class CreateEmployeeFormPage(IService<int, EmployeeDto> service) : BasePage
 	{
-		private readonly ICudService<int, EmployeeDto> service = service;
+		private readonly IService<int, EmployeeDto> service = service;
 
 		private IDictionary<string, string?> newEmployeeValues = new Dictionary<string, string?>()
 		{
@@ -93,7 +93,7 @@ namespace Source.Menu.Pages
 
 			try
 			{
-				this.service.CreateOneEntry(new EmployeeDto()
+				this.service.Create(new EmployeeDto()
 				{
 					Ssn = this.newEmployeeValues["Ssn"]!,
 					Surname = this.newEmployeeValues["Surname"]!,

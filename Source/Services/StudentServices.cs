@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using Source.DTO;
 using Source.Models;
 using Source.Persistent;
@@ -6,7 +5,7 @@ using Source.Services.IServices;
 
 namespace Source.Services
 {
-	public class StudentService(IUnitOfWork unitOfWork) : IService, ICudService<int, StudentDto>
+	public class StudentService(IUnitOfWork unitOfWork) : IService<int, StudentDto>, IStudentService
 	{
 		private readonly IUnitOfWork unitOfWork = unitOfWork;
 
@@ -64,7 +63,7 @@ namespace Source.Services
 			return list;
 		}
 
-		public async void CreateOneEntry(StudentDto newStudent)
+		public async void Create(StudentDto newStudent)
 		{
 			var resultId = await this.unitOfWork.Humans.FindIdByFilterASync(
 				h => h.Ssn == newStudent.Ssn &&

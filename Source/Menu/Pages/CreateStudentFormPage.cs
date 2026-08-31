@@ -11,9 +11,9 @@ namespace Source.Menu.Pages
 	///		Page for creating a new student.
 	/// </summary>
 	/// <param name="service">The service pattern object that accesses the student table.</param>
-	public class CreateStudentFormPage(ICudService<int, StudentDto> service) : BasePage
+	public class CreateStudentFormPage(IService<int, StudentDto> service) : BasePage
 	{
-		private readonly ICudService<int, StudentDto> service = service;
+		private readonly IService<int, StudentDto> service = service;
 
 		private IDictionary<string, string?> newStudentValues = new Dictionary<string, string?>()
 		{
@@ -86,7 +86,7 @@ namespace Source.Menu.Pages
 		{
 			try
 			{
-				this.service.CreateOneEntry(new StudentDto()
+				this.service.Create(new StudentDto()
 				{
 					Ssn = this.newStudentValues["Ssn"]!,
 					Surname = this.newStudentValues["Surname"]!,
