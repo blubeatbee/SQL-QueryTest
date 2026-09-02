@@ -11,33 +11,41 @@ namespace Source.Menu.Pages
 	/// <param name="employeeService">The service pattern object that accesses employee table.</param>
 	public class EmployeePage(EmployeeService employeeService) : BasePage
 	{
-		private EmployeeService service = employeeService;
+		private readonly EmployeeService service = employeeService;
 
 		protected sealed override IList<BaseComponent> PageContent { get; set; } = new List<BaseComponent>([
+			new Text($"Invalid Data"),
 			new NavLink("Return", "Employees"),
-			new Text(),
-			new Text(
-				$"{"ID", 5} | {"SSN", -13} | {"Surname", -16} | {"Name", -16} | {"Middle name", -16} | " +
-				$"{"Role", -16} | {"Salary",-12} | {"Hired on",-10} | {"Quit on",-10} |"),
 			new Text()
 			]);
 
 		public sealed override IList<BaseComponent> GetPageContent()
 		{
 			var pageContent = new List<BaseComponent>();
-			pageContent.AddRange([.. this.PageContent]);
+			pageContent.AddRange([
+				this.PageContent[1],
+				this.PageContent[2],
+				]);
 
 			try
 			{
 				var employee = service.GetEmployee(App.Id).Result;
+
 				pageContent.Add(new Text(
-					$"{employee.HumanId,4} | {employee.Ssn.Insert(8, "-"),-13} | {employee.Surname,-16} | {employee.Forname,-16} | {employee.Midname ?? null,-16} | " +
-					$"{employee.Role ?? null,-16} | {employee.Salary,12} | {employee.DateHired,-10} | {employee.DateQuit,-10} |"
+					$"\n          {"ID"}: {employee.HumanId}" +
+					$"\n         {"SSN"}: {employee.Ssn.Insert(8, "-")}" +
+					$"\n        {"Name"}: {employee.Surname}{employee.Forname}{employee.Midname ?? null}" +
+					$"\n      {"Salary"}: {employee.Salary}" +
+					$"\n        {"Role"}: {employee.Role}" +
+					$"\n       {"Tasks"}: {null}" +
+					$"\n   {"Hire date"}: {employee.DateHired}" +
+					$"\n {"Is Employed"}: {employee.IsEmployed}" +
+					$"\n   {"Quit date"}: {(employee.DateQuit != null ? employee.DateQuit : "--/--/----")}"
 					));
 			}
 			catch
 			{
-				pageContent.Add(new Text("Invalid data"));
+				pageContent.Add(this.PageContent[0]);
 			}
 
 			return pageContent;

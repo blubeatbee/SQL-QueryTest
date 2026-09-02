@@ -1,4 +1,3 @@
-using Source.DTO;
 using Source.Menu.Components;
 using Source.Menu.Components.Base;
 using Source.Menu.Pages.Base;
@@ -18,14 +17,13 @@ namespace Source.Menu.Pages
 		private short filterEmployee;
 
 		protected sealed override IList<BaseComponent> PageContent { get; set; } = new List<BaseComponent>([
-			new NavLink("Add new employee", "NewEmployee"),
+			new Text($"No Data Found."),
 			new NavLink("Return", "Title"),
+			new NavLink("Add new employee", "NewEmployee"),
 			new Text(),
 			new Text(
 				$"{"ID", 5} | {"SSN", -13} | {"Surname", -16} | {"Name", -16} | {"Middle name", -16} | " +
-				$"{"Role", -16} | {"Salary",-12} | {"Hired on",-10} | {"Quit on",-10} |"
-			),
-			new Text()
+				$"{"Role", -16} | {"Salary",-12} | {"Hired on",-10} | {"Quit on",-10} |"),
 			]);
 
 
@@ -33,13 +31,18 @@ namespace Source.Menu.Pages
 		{
 			var pageContent = new List<BaseComponent>();
 			pageContent.AddRange(
-				new Button($"Sort by {(this.pageContentAscending ? "Ascending" : "Descending")}", ToggleSort),
-				new Button($"Show all", SetFilterToAll),
-				new Button($"Show teachers only", SetFilterToTeacherOnly),
-				new Button($"Show admins only", SetFilterToAdminOnly),
-				new Button($"Show principals only", SetFilterToPrincipalOnly)
+				this.PageContent[1],
+				this.PageContent[2],
+				this.PageContent[3],
+				new Button($"Sort by: {(this.pageContentAscending ? "Ascending" : "Descending")}", ToggleSort),
+				new Button($"Show All Employees", SetFilterToAll),
+				new Button($"Show Teachers Only", SetFilterToTeacherOnly),
+				new Button($"Show Admins Only", SetFilterToAdminOnly),
+				new Button($"Show Principals Only", SetFilterToPrincipalOnly),
+				this.PageContent[3],
+				this.PageContent[4],
+				this.PageContent[3]
 			);
-			pageContent.AddRange(this.PageContent);
 
 			try
 			{
@@ -61,7 +64,7 @@ namespace Source.Menu.Pages
 			}
 			catch
 			{
-				pageContent.Add(new Text("No data"));
+				pageContent.Add(this.PageContent[0]);
 			}
 
 			return pageContent;

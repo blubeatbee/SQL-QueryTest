@@ -17,6 +17,6 @@ namespace Source.DTO
 		public DateOnly? DateQuit { get; set; }
 		public bool? IsGraduated { get; set; }
 
-		public List<StudentGradeDTO> Grades { get; set; } = new();
+		public ICollection<StudentGradeDTO> Grades { get; set; } = new List<StudentGradeDTO>();
 	}
 }

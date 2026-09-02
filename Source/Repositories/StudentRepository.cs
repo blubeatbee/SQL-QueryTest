@@ -14,6 +14,18 @@ namespace Source.Repositories
 
 		public GymnasiumDbContext GymnasiumDbContext { get { return (GymnasiumDbContext)base.Context; } }
 
+		public async Task<Human> GetStudentAsync(int id)
+		{
+			var query = this.GymnasiumDbContext.Humans.Where(h => h.HumanId == id)
+				.Include(h => h.Student)
+					.ThenInclude(s => s!.Gradings)
+				.Include(h => h.Student)
+					.ThenInclude(s => s!.Gradings)
+						.ThenInclude(g => g!.Course);
+
+			return await query.FirstAsync();
+		}
+
 		public async Task<IList<Student>> GetStudentsWithGradesAsync()
 		{
 			var result = await this.GymnasiumDbContext.Students

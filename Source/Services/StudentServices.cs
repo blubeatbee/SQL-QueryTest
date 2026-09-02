@@ -9,25 +9,49 @@ namespace Source.Services
 	{
 		private readonly IUnitOfWork unitOfWork = unitOfWork;
 
-		public async Task<StudentDto> GetStudent(int id)
+		public async Task<StudentGetInfoDTO> GetStudentAsync(int id)
 		{
-			var h = await this.unitOfWork.Humans.GetAsync(id) ?? throw new ArgumentNullException();
-			var s = await this.unitOfWork.Students.GetAsync(id) ?? throw new ArgumentNullException();
+			var h = await this.unitOfWork.Students.GetStudentAsync(id) ?? throw new ArgumentNullException(nameof(id));
 
-			var student = new StudentDto()
+			if (h.Student == null)
+			{
+				throw new InvalidOperationException($"Returned object has null value in property: {nameof(h.Student)}");
+			}
+
+			var g = await this.unitOfWork.Gradings.GetGradingsByStudentId(id) ?? throw new ArgumentNullException(nameof(id));
+
+			var student = new StudentGetInfoDTO()
 			{
 				HumanId = h.HumanId,
 				Ssn = h.Ssn,
 				Surname = h.Surname,
 				Forname = h.Forname,
 				Midname = h.Midname,
-				CyearId = s.CyearId,
-				ClassId = s.ClassId,
-				DateEnroll = s.DateEnroll,
-				IsActive = s.IsActive,
-				DateQuit = s.DateQuit,
-				IsGraduated = s.IsGraduated,
+				CyearId = h.Student.CyearId,
+				ClassId = h.Student.ClassId,
+				DateEnroll = h.Student.DateEnroll,
+				IsActive = h.Student.IsActive,
+				DateQuit = h.Student.DateQuit,
+				IsGraduated = h.Student.IsGraduated,
 			};
+
+			List<int> teacherIds = new();
+
+			foreach (var i in h.Student.Gradings)
+			{
+				teacherIds.Add(i.TeacherId);
+			}
+
+
+			foreach (var i in g)
+			{
+				student.Grades.Add(new StudentGradeDTO()
+				{
+					Grading = i.Grading1,
+					CourseTitle = i.Course.Content ?? $"Course name not available",
+					TeacherName = i.Teacher.
+				});
+			}
 
 			return student;
 		}

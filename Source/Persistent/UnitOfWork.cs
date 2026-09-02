@@ -17,6 +17,7 @@ namespace Source.Persistent
 			this.context = context;
 			this.Administrators = new AdministratorRepository(this.context);
 			this.Employees = new EmployeeRepository(this.context);
+			this.Gradings = new GradingRepository(this.context);
 			this.Humans = new HumanRepository(this.context);
 			this.Principals = new PrincipalRepository(this.context);
 			this.Students = new StudentRepository(this.context);
@@ -25,6 +26,7 @@ namespace Source.Persistent
 
 		public IAdministratorRepository Administrators { get; private set; }
 		public IEmployeeRepository Employees { get; private set; }
+		public IGradingRepository Gradings { get; private set; }
 		public IHumanRepository Humans { get; private set; }
 		public IPrincipalRepository Principals { get; private set; }
 		public IStudentRepository Students { get; private set; }

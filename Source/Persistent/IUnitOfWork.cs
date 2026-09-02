@@ -9,6 +9,7 @@ namespace Source.Persistent
 	{
 		IAdministratorRepository Administrators { get; }
 		IEmployeeRepository Employees { get; }
+		IGradingRepository Gradings { get; }
 		IHumanRepository Humans { get; }
 		IPrincipalRepository Principals { get; }
 		IStudentRepository Students { get; }

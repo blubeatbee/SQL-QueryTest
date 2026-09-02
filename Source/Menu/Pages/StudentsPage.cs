@@ -11,36 +11,39 @@ namespace Source.Menu.Pages
 	/// <param name="studentServices">The service pattern object that accesses the student table.</param>
 	public class StudentsPage(StudentService studentServices) : BasePage
 	{
-		private StudentService service = studentServices;
+		private readonly StudentService service = studentServices;
 
-		private readonly IList<BaseComponent> header = [
-			new NavLink("Add new student", "NewStudent"),
+		private bool pageContentAscending = true;
+		private string filterStudent = string.Empty;
+
+		protected sealed override IList<BaseComponent> PageContent { get; set; } = new List<BaseComponent>([
+			new Text($"No Data Found"),
 			new NavLink("Return", "Title"),
+			new NavLink("Add new student", "NewStudent"),
 			new Text(),
 			new Text(
 				$"{"ID", 5} | {"SSN", -13} | {"Surname", -16} | {"Name", -16} | {"Middle name", -16} | " +
 				$"{"Class", -7} | {"Enrolled", -10} | {"Active?", -8} | {"Quit on", -10} | {"Graduated?", -8}"),
-			new Text()
-		];
-		private bool pageContentAscending = true;
-		private string filterStudent = string.Empty;
-
-		protected sealed override IList<BaseComponent> PageContent { get; set; } = new List<BaseComponent>();
+			]);
 
 		public sealed override IList<BaseComponent> GetPageContent()
 		{
 			var pageContent = new List<BaseComponent>([
+				this.PageContent[1],
+				this.PageContent[2],
+				this.PageContent[3],
 				new Button($"Sort by {(this.pageContentAscending ? "Ascending" : "Descending")}", ToggleSort),
-				new Button($"Show all classes", SetFilterByNone),
-				new Button($"Show class 2024EST only", SetFilterByClass2024EST),
-				new Button($"Show class 2024NAT only", SetFilterByClass2024NAT),
-				new Button($"Show class 2024SAM only", SetFilterByClass2024SAM),
-				new Button($"Show class 2025EST only", SetFilterByClass2025EST),
-				new Button($"Show class 2025NAT only", SetFilterByClass2025NAT),
-				new Button($"Show class 2025SAM only", SetFilterByClass2025SAM)
+				new Button($"Show All Classes", SetFilterByNone),
+				new Button($"Show Class 2024EST Only", SetFilterByClass2024EST),
+				new Button($"Show Class 2024NAT Only", SetFilterByClass2024NAT),
+				new Button($"Show Class 2024SAM Only", SetFilterByClass2024SAM),
+				new Button($"Show Class 2025EST Only", SetFilterByClass2025EST),
+				new Button($"Show Class 2025NAT Only", SetFilterByClass2025NAT),
+				new Button($"Show Class 2025SAM Only", SetFilterByClass2025SAM),
+				this.PageContent[3],
+				this.PageContent[4],
+				this.PageContent[3]
 			]);
-
-			pageContent.AddRange(this.header);
 
 			try
 			{
@@ -54,7 +57,7 @@ namespace Source.Menu.Pages
 				{
 					pageContent.Add(new DataLink(
 						$"{i.HumanId, 4} | {i.Ssn.Insert(8, "-"), -12} | {i.Surname, -16} | {i.Forname, -16} | {i.Midname ?? null, -16} | " +
-						$"{i.CyearId, 4}{i.ClassId,3} | {i.DateEnroll, -10} | {i.IsActive, -8} | {i.DateQuit, -10} | {i.IsGraduated, -8}",
+						$"{i.CyearId, 4}{i.ClassId,3} | {i.DateEnroll, -10} | {i.IsActive, -8} | {i.DateQuit, -10} | {i.IsGraduated ?? false, -8}",
 						i.HumanId,
 						"Student"
 					));
@@ -62,7 +65,7 @@ namespace Source.Menu.Pages
 			}
 			catch
 			{
-				pageContent.Add(new Text("No data"));
+				pageContent.Add(this.PageContent[0]);
 			}
 
 			return pageContent;

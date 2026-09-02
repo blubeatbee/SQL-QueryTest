@@ -11,48 +11,42 @@ namespace Source.Menu.Pages
 	/// <param name="studentServices">The service pattern object that accesses student table.</param>
 	public class StudentPage(StudentService studentServices) : BasePage
 	{
-		private StudentService service = studentServices;
-
-		private Text invalidData = new Text($"Invalid Data");
+		private readonly StudentService service = studentServices;
 
 		protected sealed override IList<BaseComponent> PageContent { get; set; } = new List<BaseComponent>([
+			new Text($"Invalid Data"),
 			new NavLink("Return", "Students"),
 			new Text(),
-			new Text(
-				$"{"ID", 5} | {"SSN", -13} | {"Surname", -16} | {"Name", -16} | {"Middle name", -16} | " +
-				$"{"Class", -7} | {"Enrolled", -10} | {"Active?", -8} | {"Quit on", -10} | {"Graduated?", -8}"),
-			new Text()
 			]);
 
 		public sealed override IList<BaseComponent> GetPageContent()
 		{
-			var pageItems = new List<BaseComponent>();
-			pageItems.AddRange([.. this.PageContent]);
+			var pageContent = new List<BaseComponent>();
+			pageContent.AddRange([
+				this.PageContent[1],
+				this.PageContent[2],
+				]);
 
 			try
 			{
-				var student = service.GetStudent(App.Id).Result;
-				pageItems.Add(new Text(
-					$"{student.HumanId,4} | {student.Ssn.Insert(8, "-"),-12} | {student.Surname,-16} | {student.Forname,-16} | {student.Midname ?? null,-16} | " +
-					$"{student.CyearId,4}{student.ClassId,3} | {student.DateEnroll,-10} | {student.IsActive,-8} | {student.DateQuit,-10} | {student.IsGraduated,-8}"
-					));
-				pageItems.Add(new Text(
-					$"          {"ID"}: {student.HumanId}" +
-					$"         {"SSN"}: {student.Ssn.Insert(8, "-")}" +
-					$"        {"Name"}: {student.Surname}{student.Forname}{student.Midname ?? null}" +
-					$"       {"Class"}: {student.CyearId}{student.ClassId}" +
-					$" {"Enroll date"}: {student.DateEnroll}" +
-					$"   {"Quit date"}: {student.DateQuit ?? null}" +
-					$"{"Is Graduated"}: {student.IsGraduated}" +
-					$"   {"Is Active"}: {student.IsActive}"
+				var student = service.GetStudentAsync(App.Id).Result;
+				pageContent.Add(new Text(
+					$"\n          {"ID"}: {student.HumanId}" +
+					$"\n         {"SSN"}: {student.Ssn.Insert(8, "-")}" +
+					$"\n        {"Name"}: {student.Surname}{student.Forname}{student.Midname ?? null}" +
+					$"\n       {"Class"}: {student.CyearId}{student.ClassId}" +
+					$"\n {"Enroll date"}: {student.DateEnroll}" +
+					$"\n   {"Quit date"}: {(student.DateQuit != null ? student.DateQuit : "--/--/----")}" +
+					$"\n   {"Is Active"}: {student.IsActive}" +
+					$"\n   {"Graduated"}: {student.IsGraduated ?? false}"
 					));
 			}
 			catch
 			{
-				pageItems.Add(this.invalidData);
+				pageContent.Add(this.PageContent[0]);
 			}
 
-			return pageItems;
+			return pageContent;
 		}
 	}
 }
