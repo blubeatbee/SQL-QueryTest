@@ -15,17 +15,17 @@ namespace Source.Data
 		{
 		}
 
-		public virtual DbSet<Administrator> Administrators { get; set; }
-		public virtual DbSet<Class> Classes { get; set; }
-		public virtual DbSet<ClassTeacher> ClassTeachers { get; set; }
-		public virtual DbSet<Course> Courses { get; set; }
-		public virtual DbSet<CourseClass> CourseClasses { get; set; }
-		public virtual DbSet<Employee> Employees { get; set; }
-		public virtual DbSet<Grading> Gradings { get; set; }
-		public virtual DbSet<Human> Humans { get; set; }
-		public virtual DbSet<Principal> Principals { get; set; }
-		public virtual DbSet<Student> Students { get; set; }
-		public virtual DbSet<Teacher> Teachers { get; set; }
+		//public virtual DbSet<Administrator> Administrators { get; set; }
+		//public virtual DbSet<Class> Classes { get; set; }
+		//public virtual DbSet<ClassTeacher> ClassTeachers { get; set; }
+		//public virtual DbSet<Course> Courses { get; set; }
+		//public virtual DbSet<CourseClass> CourseClasses { get; set; }
+		//public virtual DbSet<Employee> Employees { get; set; }
+		//public virtual DbSet<Grading> Gradings { get; set; }
+		//public virtual DbSet<Human> Humans { get; set; }
+		//public virtual DbSet<Principal> Principals { get; set; }
+		//public virtual DbSet<Student> Students { get; set; }
+		//public virtual DbSet<Teacher> Teachers { get; set; }
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{

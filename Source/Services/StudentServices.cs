@@ -1,133 +1,92 @@
 using Source.DTO;
-using Source.Models;
 using Source.Persistent;
 using Source.Services.IServices;
 
 namespace Source.Services
 {
-	public class StudentService(IUnitOfWork unitOfWork) : IService<int, StudentDto>, IStudentService
+	public class StudentService(IUnitOfWork unitOfWork) : IStudentService
 	{
 		private readonly IUnitOfWork unitOfWork = unitOfWork;
 
-		public async Task<StudentGetInfoDTO> GetStudentAsync(int id)
+		public async Task<StudentGetDTO> RetrieveStudentAsync(int id)
 		{
-			var h = await this.unitOfWork.Students.GetStudentAsync(id) ?? throw new ArgumentNullException(nameof(id));
+			var s = await this.unitOfWork.Students.GetAsync(id) ?? throw new ArgumentNullException(nameof(id));
 
-			if (h.Student == null)
+			var student = new StudentGetDTO()
 			{
-				throw new InvalidOperationException($"Returned object has null value in property: {nameof(h.Student)}");
-			}
-
-			var g = await this.unitOfWork.Gradings.GetGradingsByStudentId(id) ?? throw new ArgumentNullException(nameof(id));
-
-			var student = new StudentGetInfoDTO()
-			{
-				HumanId = h.HumanId,
-				Ssn = h.Ssn,
-				Surname = h.Surname,
-				Forname = h.Forname,
-				Midname = h.Midname,
-				CyearId = h.Student.CyearId,
-				ClassId = h.Student.ClassId,
-				DateEnroll = h.Student.DateEnroll,
-				IsActive = h.Student.IsActive,
-				DateQuit = h.Student.DateQuit,
-				IsGraduated = h.Student.IsGraduated,
+				StudentId = s.StudentId,
+				Ssn = s.Ssn,
+				Surname = s.Surname,
+				Name = s.Name,
+				ClassId = s.ClassId ?? string.Empty,
+				DateEnrolled = s.DateEnrolled,
+				DateQuit = s.DateQuit,
+				IsActive = s.IsActive,
 			};
 
-			List<int> teacherIds = new();
-
-			foreach (var i in h.Student.Gradings)
+			foreach (var g in s.Gradings)
 			{
-				teacherIds.Add(i.TeacherId);
-			}
-
-
-			foreach (var i in g)
-			{
-				student.Grades.Add(new StudentGradeDTO()
+				student.Grades.Add(new StudentGetGradeDTO()
 				{
-					Grading = i.Grading1,
-					CourseTitle = i.Course.Content ?? $"Course name not available",
-					TeacherName = i.Teacher.
+					CourseTitle = g.Course!.Title ?? string.Empty,
+					Grading = g.Grade,
+					DateSet = g.DateSet,
+					TeacherName = (g.Teacher!.Surname + g.Teacher!.Name) ?? string.Empty,
 				});
 			}
 
 			return student;
 		}
 
-		public async Task<IList<StudentDto>> GetAllStudents(string filter)
+		public async Task<IList<StudentGetDTO>> RetrieveStudentsAsync(string filterClass)
 		{
-			var students = string.IsNullOrWhiteSpace(filter) ?
-				await this.unitOfWork.Students.GetStudentsAsync() :
-				await this.unitOfWork.Students.GetStudentsAsync(h => (h.Student!.CyearId + h.Student!.ClassId) == filter)
+			var students = string.IsNullOrWhiteSpace(filterClass)
+				? await this.unitOfWork.Students.GetAllAsync()
+				: await this.unitOfWork.Students.GetByFilterAsync(s => s.ClassId == filterClass)
 				?? throw new ArgumentNullException();
 
-			var list = new List<StudentDto>();
+			var studentList = new List<StudentGetDTO>();
 
 			foreach (var s in students)
 			{
-				list.Add(new StudentDto
+				studentList.Add(new StudentGetDTO
 				{
-					HumanId = s.HumanId,
+					StudentId = s.StudentId,
 					Ssn = s.Ssn,
 					Surname = s.Surname,
-					Forname = s.Forname,
-					Midname = s.Midname,
-					CyearId = s.Student!.CyearId,
-					ClassId = s.Student!.ClassId,
-					DateEnroll = s.Student!.DateEnroll,
-					IsActive = s.Student!.IsActive,
-					DateQuit = s.Student!.DateQuit,
-					IsGraduated = s.Student!.IsGraduated,
+					Name = s.Name,
+					ClassId = s.ClassId ?? string.Empty,
+					DateEnrolled = s.DateEnrolled,
+					DateQuit = s.DateQuit,
+					IsActive = s.IsActive,
 				});
 			}
 
-			return list;
+			return studentList;
 		}
 
-		public async void Create(StudentDto newStudent)
+		public async void Create(StudentCreateDTO newStudent)
 		{
-			var resultId = await this.unitOfWork.Humans.FindIdByFilterASync(
-				h => h.Ssn == newStudent.Ssn &&
-				(h.Surname + h.Forname) == newStudent.Surname + newStudent.Forname);
-
-			if (resultId == -1)
+			try
 			{
-				try
+				this.unitOfWork.Students.Add(new()
 				{
-					this.unitOfWork.Humans.Add(new Human()
-					{
-						Ssn = newStudent.Ssn,
-						Surname = newStudent.Surname,
-						Midname = newStudent.Midname,
-						Forname = newStudent.Forname,
-						Age = newStudent.Age,
-					});
+					Ssn = newStudent.Ssn,
+					Surname = newStudent.Surname,
+					Name = newStudent.Name,
+					ClassId = newStudent.ClassId,
+					DateEnrolled = newStudent.DateEnrolled,
+					DateQuit = null,
+					IsActive = newStudent.DateEnrolled < DateOnly.FromDateTime(DateTime.Now),
+				});
 
-					var newId = await this.unitOfWork.Humans.FindIdByFilterASync(
-						h => h.Ssn == newStudent.Ssn &&
-						(h.Surname + h.Forname) == newStudent.Surname + newStudent.Forname);
-
-					this.unitOfWork.Students.Add(new Student()
-					{
-						StudentId = newId,
-						ClassId = newStudent.ClassId,
-						CyearId = newStudent.CyearId,
-						DateEnroll = newStudent.DateEnroll,
-						DateQuit = newStudent.DateQuit,
-						IsActive = newStudent.DateQuit == null ? true : false,
-						IsGraduated = newStudent.IsGraduated,
-					});
-
-					_ = this.unitOfWork.Save();
-				}
-				catch
-				{
-					throw;
-				}
+				_ = await this.unitOfWork.SaveAsync();
+			}
+			catch
+			{
+				throw;
 			}
 		}
-		
+
 	}
 }

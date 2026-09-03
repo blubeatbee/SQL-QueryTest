@@ -1,13 +1,13 @@
 using Source.Menu.Components;
 using Source.Menu.Components.Base;
 using Source.Menu.Pages.Base;
-using Source.Services;
+using Source.Services.IServices;
 
 namespace Source.Menu.Pages
 {
-	public class SchoolDepartmentsPage(EmployeeService service) : BasePage
+	public class SchoolDepartmentsPage(IEmployeeService service) : BasePage
 	{
-		private readonly EmployeeService service = service;
+		private readonly IEmployeeService service = service;
 
 		private Dictionary<string, int> employeeAmount = new()
 		{
@@ -40,9 +40,9 @@ namespace Source.Menu.Pages
 
 		private void Count()
 		{
-			this.employeeAmount["Teacher"] = this.service.CountNumberOfEmployees(1).Result;
-			this.employeeAmount["Administrator"] = this.service.CountNumberOfEmployees(2).Result;
-			this.employeeAmount["Principal"] = this.service.CountNumberOfEmployees(3).Result;
+			this.employeeAmount["Teacher"] = this.service.NumberOfActiveEmployees(1).Result;
+			this.employeeAmount["Administrator"] = this.service.NumberOfActiveEmployees(2).Result;
+			this.employeeAmount["Principal"] = this.service.NumberOfActiveEmployees(3).Result;
 		}
 
 	}

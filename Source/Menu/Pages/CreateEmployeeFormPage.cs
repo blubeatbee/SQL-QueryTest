@@ -1,4 +1,3 @@
-using Source.DTO;
 using Source.Menu.Components;
 using Source.Menu.Components.Base;
 using Source.Menu.Pages.Base;
@@ -11,18 +10,18 @@ namespace Source.Menu.Pages
 	///		Page for creating a new employee.
 	/// </summary>
 	/// <param name="service">The service pattern object that accesses the employee table.</param>
-	public class CreateEmployeeFormPage(IService<int, EmployeeDto> service) : BasePage
+	public class CreateEmployeeFormPage(IEmployeeService service) : BasePage
 	{
-		private readonly IService<int, EmployeeDto> service = service;
+		private readonly IEmployeeService service = service;
 
-		private IDictionary<string, string?> newEmployeeValues = new Dictionary<string, string?>()
+		private Dictionary<string, string?> newEmployeeValues = new()
 		{
 			{ "Ssn", string.Empty },
 			{ "Surname", string.Empty },
-			{ "Forname", string.Empty },
-			{ "Midname", string.Empty },
+			{ "Name", string.Empty },
 			{ "Role", string.Empty },
 			{ "Salary", string.Empty },
+			{ "Tasks", string.Empty},
 		};
 
 		protected sealed override IList<BaseComponent> PageContent { get; set; } = new List<BaseComponent>([
@@ -34,12 +33,12 @@ namespace Source.Menu.Pages
 		{
 			List<BaseComponent> pageContent = [
 				.. this.PageContent,
-				new Button($"SSN:         {newEmployeeValues["Ssn"]}", AddSsn),
-				new Button($"Surname:     {newEmployeeValues["Surname"]}", AddSurname),
-				new Button($"First name:  {newEmployeeValues["Forname"]}", AddForname),
-				new Button($"Middle name: {newEmployeeValues["Midname"]}", AddMidname),
-				new Button($"Role:        {newEmployeeValues["Role"]}", AddRole),
-				new Button($"Salary:      {newEmployeeValues["Salary"]}", AddSalary),
+				new Button($"SSN:        {newEmployeeValues["Ssn"]}", AddSsn),
+				new Button($"Surname:    {newEmployeeValues["Surname"]}", AddSurname),
+				new Button($"Given name: {newEmployeeValues["Name"]}", AddName),
+				new Button($"Role:       {newEmployeeValues["Role"]}", AddRole),
+				new Button($"Salary:     {newEmployeeValues["Salary"]}", AddSalary),
+				new Button($"Tasks:      {newEmployeeValues["Tasks"]}", AddTasks),
 				new Text(),
 				new Button($"Create new employee", CreateNewEmployee),
 			];
@@ -56,14 +55,9 @@ namespace Source.Menu.Pages
 			this.newEmployeeValues["Surname"] = Input.ToString<string>("Input employee's surname.", 1, 50);
 			_ = this.GetPageContent();
 		}
-		private void AddForname()
+		private void AddName()
 		{
-			this.newEmployeeValues["Forname"] = Input.ToString<string>("Input employee's first name.", 1, 50);
-			_ = this.GetPageContent();
-		}
-		private void AddMidname()
-		{
-			this.newEmployeeValues["Midname"] = Input.ToString<string>("Input employee's middle name.", 1, 50);
+			this.newEmployeeValues["Name"] = Input.ToString<string>("Input employee's given and middle names.", 1, 50);
 			_ = this.GetPageContent();
 		}
 		private void AddRole()
@@ -74,33 +68,45 @@ namespace Source.Menu.Pages
 				new Button("Principal", () => { })
 				]);
 
-			this.newEmployeeValues["Role"] = result!.ToString() ?? null;
+			this.newEmployeeValues["Role"] = result!.ToString() ?? "0";
 			_ = this.GetPageContent();
 		}
 		private void AddSalary()
 		{
-			this.newEmployeeValues["Salary"] = Input.ToString<int>("Input employee's salary.", 1, 11);
+			this.newEmployeeValues["Salary"] = Input.ToString<decimal>("Input employee's salary.", 1, 11);
+			_ = this.GetPageContent();
+		}
+		private void AddTasks()
+		{
+			this.newEmployeeValues["Tasks"] = Input.ToString<string>("Input employee tasks.", 1, 500);
 			_ = this.GetPageContent();
 		}
 
 		private void CreateNewEmployee()
 		{
-			int salary;
-			if (!int.TryParse(this.newEmployeeValues["Salary"], out salary))
+			if (!decimal.TryParse(this.newEmployeeValues["Salary"], out var salary))
 			{
 				salary = 0;
 			}
 
+			var employeeRole = this.newEmployeeValues["Role"] switch
+			{
+				"Teacher" => 1,
+				"Administrator" => 2,
+				"Principal" => 3,
+				_ => 1
+			};
+
 			try
 			{
-				this.service.Create(new EmployeeDto()
+				this.service.Create(new()
 				{
 					Ssn = this.newEmployeeValues["Ssn"]!,
 					Surname = this.newEmployeeValues["Surname"]!,
-					Forname = this.newEmployeeValues["Forname"]!,
-					Midname = this.newEmployeeValues["Midname"]!,
-					Role = this.newEmployeeValues["Role"],
+					Name = this.newEmployeeValues["Name"]!,
+					RoleId = employeeRole,
 					Salary = salary,
+					Tasks = this.newEmployeeValues["Tasks"],
 					DateHired = DateOnly.FromDateTime(DateTime.Now)
 				});
 			}

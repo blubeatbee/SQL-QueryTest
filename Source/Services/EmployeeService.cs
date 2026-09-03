@@ -1,84 +1,72 @@
 using Source.DTO;
-using Source.Models;
 using Source.Persistent;
 using Source.Services.IServices;
 
 namespace Source.Services
 {
-	public class EmployeeService(IUnitOfWork unitOfWork) : IService<int, EmployeeDto>, IEmployeeService
+	public class EmployeeService(IUnitOfWork unitOfWork) : IEmployeeService
 	{
 		private readonly IUnitOfWork unitOfWork = unitOfWork;
 
-		public async Task<EmployeeDto> GetEmployee(int id)
+		public async Task<EmployeeGetDTO> RetrieveEmployeeAsync(int id)
 		{
-			var h = await this.unitOfWork.Employees.GetEmployeeAsync(id);
+			var e = await this.unitOfWork.Employees.GetAsync(id) ?? throw new ArgumentNullException(nameof(id));
 
-			if (h.Employee == null)
+			var employee = new EmployeeGetDTO
 			{
-				throw new InvalidOperationException($"Returned object has null value in property: {nameof(h.Employee)}");
-			}
-
-			var employee = new EmployeeDto
-			{
-				HumanId = h.HumanId,
-				Ssn = h.Ssn,
-				Surname = h.Surname,
-				Forname = h.Forname,
-				Midname = h.Midname,
-				Role = h.Employee.Administrator != null ? "Administrator" : (h.Employee.Principal != null ? "Principal" : (h.Employee.Teacher != null ? "Teacher" : null)),
-				Salary = h.Employee.Salary,
-				DateHired = h.Employee.DateHired,
-				IsEmployed = h.Employee.IsEmployed,
-				DateQuit = h.Employee.DateQuit
+				EmployeeId = e.EmployeeId,
+				Ssn = e.Ssn,
+				Surname = e.Surname,
+				Name = e.Name,
+				Role = e.Role == null ? string.Empty : e.Role.RoleTitle,
+				Tasks = e.Tasks ?? string.Empty,
+				Salary = e.Salary,
+				DateHired = e.DateHired,
+				DateQuit = e.DateQuit,
+				IsEmployed = e.IsEmployed,
 			};
 
 			return employee;
 		}
 
-		public async Task<IList<EmployeeDto>> GetAllEmployees(short employeeType)
+		public async Task<IList<EmployeeGetDTO>> RetrieveEmployeesByRoleAsync(short employeeRole)
 		{
-			var employees = await this.unitOfWork.Employees.GetEmployeesAsync(employeeType)
+			var employees = (employeeRole == 0)
+				? await this.unitOfWork.Employees.GetAllAsync()
+				: await this.unitOfWork.Employees.GetByFilterAsync(e => e.RoleId == employeeRole)
 				?? throw new ArgumentNullException();
 
-			var employeeList = new List<EmployeeDto>();
+			var employeeList = new List<EmployeeGetDTO>();
 
 			foreach(var e in employees)
 			{
-				employeeList.Add(new EmployeeDto
+				employeeList.Add(new EmployeeGetDTO
 				{
-					HumanId = e.HumanId,
+					EmployeeId = e.EmployeeId,
 					Ssn = e.Ssn,
 					Surname = e.Surname,
-					Forname = e.Forname,
-					Midname = e.Midname,
-					Role = e.Employee!.Teacher != null ?
-						"Teacher" :
-						(e.Employee!.Administrator != null ?
-							"Administrator" :
-							(e.Employee!.Principal != null ?
-								"Principal" :
-								null)),
-					Salary = e.Employee!.Salary,
-					DateHired = e.Employee!.DateHired,
-					IsEmployed = e.Employee!.IsEmployed,
-					DateQuit = e.Employee!.DateQuit,
+					Name = e.Name,
+					Role = e.Role == null ? string.Empty : e.Role.RoleTitle,
+					Tasks = e.Tasks ?? string.Empty,
+					Salary = e.Salary,
+					DateHired = e.DateHired,
+					DateQuit = e.DateQuit,
+					IsEmployed = e.IsEmployed,
 				});
 			}
 
 			return employeeList;
 		}
 
-		public async Task<int> CountNumberOfEmployees(short employeeType)
+		public async Task<int> NumberOfActiveEmployees(short employeeRole)
 		{
 			try
 			{
-				return employeeType switch
-				{
-					1 => await this.unitOfWork.Teachers.CountByFilterAsync(t => t.Employee.IsEmployed == true),
-					2 => await this.unitOfWork.Administrators.CountByFilterAsync(a => a.Employee.IsEmployed == true),
-					3 => await this.unitOfWork.Principals.CountByFilterAsync(p => p.Employee.IsEmployed == true),
-					_ => await this.unitOfWork.Employees.CountByFilterAsync(e => e.IsEmployed == true),
-				};
+				return employeeRole == 0
+					? await this.unitOfWork.Employees
+						.CountByFilterAsync(e => e.IsEmployed == true)
+					: await this.unitOfWork.Employees
+						.CountByFilterAsync(e => e.IsEmployed == true && e.RoleId == employeeRole);
 			}
 			catch
 			{
@@ -86,57 +74,28 @@ namespace Source.Services
 			}
 		}
 
-		public async void Create(EmployeeDto newEmployee)
+		public async void Create(EmployeeCreateDTO newEmployee)
 		{
-
-			if (await this.unitOfWork.Humans.FindIdByFilterASync(h => h.Ssn == newEmployee.Ssn &&
-				(h.Surname + h.Forname) == newEmployee.Surname + newEmployee.Forname)
-				== -1)
+			try
 			{
-				try
+				this.unitOfWork.Employees.Add(new()
 				{
-					this.unitOfWork.Humans.Add(new Human()
-					{
-						Ssn = newEmployee.Ssn,
-						Surname = newEmployee.Surname,
-						Midname = newEmployee.Midname,
-						Forname = newEmployee.Forname,
-						Age = newEmployee.Age,
-					});
+					Ssn = newEmployee.Ssn,
+					Surname = newEmployee.Surname,
+					Name = newEmployee.Name,
+					RoleId = newEmployee.RoleId,
+					Tasks = newEmployee.Tasks,
+					Salary = newEmployee.Salary,
+					DateHired = newEmployee.DateHired,
+					DateQuit = null,
+					IsEmployed = newEmployee.DateHired < DateOnly.FromDateTime(DateTime.Now),
+				});
 
-					var newId = await this.unitOfWork.Humans.FindIdByFilterASync(h => h.Ssn == newEmployee.Ssn &&
-						(h.Surname + h.Forname) == newEmployee.Surname + newEmployee.Forname);
-
-					this.unitOfWork.Employees.Add(new Employee()
-					{
-						EmployeeId = newId,
-						Salary = newEmployee.Salary,
-						DateHired = newEmployee.DateHired,
-						DateQuit = null,
-						IsEmployed = newEmployee.DateQuit == null ? true : false,
-					});
-
-					switch (newEmployee.Role)
-					{
-						case "Administrator":
-							this.unitOfWork.Administrators.Add(new Administrator() { EmployeeId = newId });
-							break;
-						case "Principal":
-							this.unitOfWork.Principals.Add(new Principal() { EmployeeId = newId });
-							break;
-						case "Teacher":
-							this.unitOfWork.Teachers.Add(new Teacher() { EmployeeId = newId });
-							break;
-						default:
-							break;
-					}
-
-					_ = this.unitOfWork.Save();
-				}
-				catch
-				{
-					throw new InvalidOperationException();
-				}
+				_ = await this.unitOfWork.SaveAsync();
+			}
+			catch
+			{
+				throw;
 			}
 		}
 

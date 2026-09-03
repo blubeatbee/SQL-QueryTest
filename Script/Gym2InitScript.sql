@@ -12,11 +12,11 @@ If database 'TestDataBase' exists:
 	- Remove the database..
 Otherwise skip this.
 */
-IF DB_ID('TestDataBase') IS NOT NULL
+IF DB_ID('Gymnasium2') IS NOT NULL
 BEGIN
-	ALTER DATABASE TestDataBase SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+	ALTER DATABASE Gymnasium2 SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
 
-	DROP DATABASE TestDataBase;
+	DROP DATABASE Gymnasium2;
 END
 
 GO
@@ -31,10 +31,11 @@ GO
 
 -- Creates database tables.
 CREATE TABLE Class (
-	ClassId			NCHAR(7) UNIQUE NOT NULL,
+	ClassId			NCHAR(7) NOT NULL,
 	DateStart		DATE NOT NULL,
 	DateEnd			DATE NOT NULL,
-	CONSTRAINT PK_Class PRIMARY KEY(ClassId)
+	CONSTRAINT PK_Class_ClassId PRIMARY KEY(ClassId),
+	CONSTRAINT UQ_ClassId UNIQUE(ClassId),
 );
 CREATE TABLE Course (
 	CourseId		INT IDENTITY(1,1) NOT NULL,
@@ -42,28 +43,29 @@ CREATE TABLE Course (
 	Title			NVARCHAR(50) NOT NULL,
 	DateStart		DATE NOT NULL,
 	DateEnd			DATE NOT NULL,
-	CONSTRAINT PK_Course PRIMARY KEY(CourseId),
+	CONSTRAINT PK_Course_CourseId PRIMARY KEY(CourseId),
 	CONSTRAINT FK_Course_Class FOREIGN KEY(ClassId) REFERENCES Class(ClassId),
 );
 GO
 
 CREATE TABLE Student (
 	StudentId		INT IDENTITY(1,1) NOT NULL,
-	ClassId			NCHAR(7) NOT NULL,
+	ClassId			NCHAR(7),
 	SSN				NCHAR(12) NOT NULL,
 	Surname			NVARCHAR(50) NOT NULL,
 	Name			NVARCHAR(50) NOT NULL,
 	DateEnrolled	DATE NOT NULL,
 	DateQuit		DATE,
 	IsActive		BIT NOT NULL,
-	CONSTRAINT PK_Student PRIMARY KEY(StudentId),
+	CONSTRAINT PK_Student_StudentId PRIMARY KEY(StudentId),
 	CONSTRAINT FK_Student_Class FOREIGN KEY(ClassId) REFERENCES Class(ClassId),
 );
 
 CREATE TABLE ERole (
 	RoleId			INT IDENTITY(1,1) NOT NULL,
-	RoleTitle		NVARCHAR(50) UNIQUE NOT NULL,
-	CONSTRAINT PK_ERole PRIMARY KEY(RoleId),
+	RoleTitle		NVARCHAR(50) NOT NULL,
+	CONSTRAINT PK_ERole_RoleId PRIMARY KEY(RoleId),
+	CONSTRAINT UQ_RoleTitle UNIQUE(RoleTitle),
 );
 GO
 
@@ -72,13 +74,13 @@ CREATE TABLE Employee (
 	SSN				NCHAR(12) NOT NULL,
 	Surname			NVARCHAR(50) NOT NULL,
 	Name			NVARCHAR(50) NOT NULL,
-	RoleId			INT NOT NULL,
-	Tasks			NVARCHAR(100),
+	RoleId			INT,
+	Tasks			NVARCHAR(500),
 	Salary			DECIMAL NOT NULL,
 	DateHired		DATE NOT NULL,
 	DateQuit		DATE,
 	IsEmployed		BIT NOT NULL,
-	CONSTRAINT PK_Employee PRIMARY KEY(EmployeeId),
+	CONSTRAINT PK_Employee_EmployeeId PRIMARY KEY(EmployeeId),
 	CONSTRAINT FK_Employee_ERole FOREIGN KEY(RoleId) REFERENCES ERole(RoleId),
 );
 GO
@@ -87,9 +89,9 @@ CREATE TABLE Grading (
 	GradingId		INT IDENTITY(1,1) NOT NULL,
 	Grade			INT NOT NULL,
 	DateSet			DATE NOT NULL,
-	CourseId		INT NOT NULL,
-	StudentId		INT NOT NULL,
-	TeacherId		INT NOT NULL,
+	CourseId		INT,
+	StudentId		INT,
+	TeacherId		INT,
 	CONSTRAINT PK_Grading PRIMARY KEY(GradingId),
 	CONSTRAINT FK_Grading_Course FOREIGN KEY(CourseId) REFERENCES Course(CourseId),
 	CONSTRAINT FK_Grading_Student FOREIGN KEY(StudentId) REFERENCES Student(StudentId),

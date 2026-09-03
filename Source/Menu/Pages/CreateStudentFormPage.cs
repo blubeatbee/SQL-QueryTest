@@ -1,4 +1,3 @@
-using Source.DTO;
 using Source.Menu.Components;
 using Source.Menu.Components.Base;
 using Source.Menu.Pages.Base;
@@ -11,18 +10,16 @@ namespace Source.Menu.Pages
 	///		Page for creating a new student.
 	/// </summary>
 	/// <param name="service">The service pattern object that accesses the student table.</param>
-	public class CreateStudentFormPage(IService<int, StudentDto> service) : BasePage
+	public class CreateStudentFormPage(IStudentService service) : BasePage
 	{
-		private readonly IService<int, StudentDto> service = service;
+		private readonly IStudentService service = service;
 
-		private IDictionary<string, string?> newStudentValues = new Dictionary<string, string?>()
+		private Dictionary<string, string?> newStudentValues = new Dictionary<string, string?>()
 		{
 			{ "Ssn", string.Empty },
 			{ "Surname", string.Empty },
-			{ "Forname", string.Empty },
-			{ "Midname", string.Empty },
+			{ "Name", string.Empty },
 			{ "ClassId", string.Empty },
-			{ "CYearId", string.Empty },
 		};
 
 		protected sealed override IList<BaseComponent> PageContent { get; set; } = new List<BaseComponent>([
@@ -36,9 +33,8 @@ namespace Source.Menu.Pages
 				.. this.PageContent,
 				new Button($"SSN:         {newStudentValues["Ssn"]}", AddSsn),
 				new Button($"Surname:     {newStudentValues["Surname"]}", AddSurname),
-				new Button($"First name:  {newStudentValues["Forname"]}", AddForname),
-				new Button($"Middle name: {newStudentValues["Midname"]}", AddMidname),
-				new Button($"Class:       {newStudentValues["CYearId"]+newStudentValues["ClassId"]}", AddClass),
+				new Button($"Given name:  {newStudentValues["Name"]}", AddName),
+				new Button($"Class:       {newStudentValues["ClassId"]}", AddClass),
 				new Text(),
 				new Button($"Create new student", CreateNewStudent),
 				];
@@ -55,14 +51,9 @@ namespace Source.Menu.Pages
 			this.newStudentValues["Surname"] = Input.ToString<string>("Input student's surname.", 1, 50);
 			_ = this.GetPageContent();
 		}
-		private void AddForname()
+		private void AddName()
 		{
-			this.newStudentValues["Forname"] = Input.ToString<string>("Input student's first name.", 1, 50);
-			_ = this.GetPageContent();
-		}
-		private void AddMidname()
-		{
-			this.newStudentValues["Midname"] = Input.ToString<string>("Input student's middle name.", 1, 50);
+			this.newStudentValues["Name"] = Input.ToString<string>("Input student's given and middle names.", 1, 50);
 			_ = this.GetPageContent();
 		}
 		private void AddClass()
@@ -70,15 +61,11 @@ namespace Source.Menu.Pages
 			var classId = PageReader.Vertical([
 				new Button("2024 EST", () => {}),
 				new Button("2024 NAT", () => {}),
-				new Button("2024 SAM", () => {}),
 				new Button("2025 EST", () => {}),
 				new Button("2025 NAT", () => {}),
-				new Button("2025 SAM", () => {})
 				]);
-			var classArray = classId!.ToString().Split(" ");
+			this.newStudentValues["ClassId"] = classId!.ToString().Replace(" ", "");
 
-			this.newStudentValues["CYearId"] = classArray[0];
-			this.newStudentValues["ClassId"] = classArray[1];
 			_ = this.GetPageContent();
 		}
 
@@ -86,18 +73,13 @@ namespace Source.Menu.Pages
 		{
 			try
 			{
-				this.service.Create(new StudentDto()
+				this.service.Create(new()
 				{
 					Ssn = this.newStudentValues["Ssn"]!,
 					Surname = this.newStudentValues["Surname"]!,
-					Forname = this.newStudentValues["Forname"]!,
-					Midname = this.newStudentValues["Midname"],
-					ClassId = this.newStudentValues["ClassId"]!,
-					CyearId = this.newStudentValues["CYearId"]!,
-					DateEnroll = DateOnly.FromDateTime(DateTime.Now),
-					IsActive = true,
-					DateQuit = null,
-					IsGraduated = null
+					Name = this.newStudentValues["Name"]!,
+					ClassId = this.newStudentValues["Class"]!,
+					DateEnrolled = DateOnly.FromDateTime(DateTime.Now),
 				});
 			}
 			catch (InvalidOperationException)

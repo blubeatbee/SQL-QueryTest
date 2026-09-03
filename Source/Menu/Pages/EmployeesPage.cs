@@ -1,7 +1,7 @@
 using Source.Menu.Components;
 using Source.Menu.Components.Base;
 using Source.Menu.Pages.Base;
-using Source.Services;
+using Source.Services.IServices;
 
 namespace Source.Menu.Pages
 {
@@ -9,12 +9,18 @@ namespace Source.Menu.Pages
 	///		Menu page that displays a list of employees.
 	/// </summary>
 	/// <param name="employeeService">The service pattern object that accesses the employee table.</param>
-	public class EmployeesPage(EmployeeService employeeService) : BasePage
+	public class EmployeesPage(IEmployeeService employeeService) : BasePage
 	{
-		private readonly EmployeeService service = employeeService;
+		private readonly IEmployeeService service = employeeService;
 
 		private bool pageContentAscending = true;
-		private short filterEmployee;
+		private short filterRole;
+		private Dictionary<string, int> employeeAmount = new()
+		{
+			{ "Teacher", 0 },
+			{ "Administrator", 0 },
+			{ "Principal", 0 },
+		};
 
 		protected sealed override IList<BaseComponent> PageContent { get; set; } = new List<BaseComponent>([
 			new Text($"No Data Found."),
@@ -22,17 +28,25 @@ namespace Source.Menu.Pages
 			new NavLink("Add new employee", "NewEmployee"),
 			new Text(),
 			new Text(
-				$"{"ID", 5} | {"SSN", -13} | {"Surname", -16} | {"Name", -16} | {"Middle name", -16} | " +
-				$"{"Role", -16} | {"Salary",-12} | {"Hired on",-10} | {"Quit on",-10} |"),
-			]);
+				$"{"ID", 5} | {"SSN", -13} | {"Surname", -16} | {"Name", -32} | {"Role", -16} | " +
+				$"{"Salary",-12} | {"Hired on",-10} | {"Quit on",-10} | {"Active",-6} |"),
+			new Text(" Number of Currently Employed Gymnasium Personnel")
+		]);
 
 
 		public sealed override IList<BaseComponent> GetPageContent()
 		{
+			this.Count();
+
 			var pageContent = new List<BaseComponent>();
 			pageContent.AddRange(
 				this.PageContent[1],
 				this.PageContent[2],
+				this.PageContent[3],
+				this.PageContent[5],
+				new Text($" \tTeachers:       {this.employeeAmount["Teacher"]}"),
+				new Text($" \tAdministrators: {this.employeeAmount["Administrator"]}"),
+				new Text($" \tPrincipals:     {this.employeeAmount["Principal"]}"),
 				this.PageContent[3],
 				new Button($"Sort by: {(this.pageContentAscending ? "Ascending" : "Descending")}", ToggleSort),
 				new Button($"Show All Employees", SetFilterToAll),
@@ -46,18 +60,18 @@ namespace Source.Menu.Pages
 
 			try
 			{
-				var employeeList = this.service.GetAllEmployees(this.filterEmployee).Result.ToList();
+				var employeeList = this.service.RetrieveEmployeesByRoleAsync(this.filterRole).Result.ToList();
 				if (!this.pageContentAscending)
 				{
 					employeeList.Reverse();
 				}
 
-				foreach (var i in employeeList)
+				foreach (var e in employeeList)
 				{
 					pageContent.Add(new DataLink(
-						$"{i.HumanId,4} | {i.Ssn.Insert(8, "-"),-13} | {i.Surname,-16} | {i.Forname,-16} | {i.Midname ?? null,-16} | " +
-						$"{i.Role ?? null,-16} | {i.Salary,12} | {i.DateHired,-10} | {i.DateQuit,-10} |",
-						i.HumanId,
+						$"{e.EmployeeId,4} | {e.Ssn,-13} | {e.Surname,-16} | {e.Name,-32} | {e.Role,-12} |" +
+						$"{e.Salary,12} | {e.DateHired,-10} | {e.DateQuit,-10} | {e.IsEmployed,-6} |",
+						e.EmployeeId,
 						"Employee"
 					));
 				}
@@ -79,23 +93,30 @@ namespace Source.Menu.Pages
 
 		private void SetFilterToAll()
 		{
-			this.filterEmployee = 0;
+			this.filterRole = 0;
 			this.GetPageContent();
 		}
 		private void SetFilterToTeacherOnly()
 		{
-			this.filterEmployee = 1;
+			this.filterRole = 1;
 			this.GetPageContent();
 		}
 		private void SetFilterToAdminOnly()
 		{
-			this.filterEmployee = 2;
+			this.filterRole = 2;
 			this.GetPageContent();
 		}
 		private void SetFilterToPrincipalOnly()
 		{
-			this.filterEmployee = 3;
+			this.filterRole = 3;
 			this.GetPageContent();
+		}
+
+		private void Count()
+		{
+			this.employeeAmount["Teacher"] = this.service.NumberOfActiveEmployees(1).Result;
+			this.employeeAmount["Administrator"] = this.service.NumberOfActiveEmployees(2).Result;
+			this.employeeAmount["Principal"] = this.service.NumberOfActiveEmployees(3).Result;
 		}
 	}
 }

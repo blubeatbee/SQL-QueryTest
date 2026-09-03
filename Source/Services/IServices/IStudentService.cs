@@ -1,6 +1,11 @@
+using Source.DTO;
+
 namespace Source.Services.IServices
 {
-	public interface IStudentService
+	public interface IStudentService : IService<int, StudentCreateDTO>
 	{
+		Task<StudentGetDTO> RetrieveStudentAsync(int id);
+		Task<IList<StudentGetDTO>> RetrieveStudentsAsync(string filterClass);
+
 	}
 }

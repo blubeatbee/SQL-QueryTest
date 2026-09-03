@@ -1,6 +1,6 @@
 namespace Source.DTO
 {
-	public class StudentGradeDTO
+	public class StudentGetGradeDTO
 	{
 		public int Grading { get; set; }
 		public string CourseTitle { get; set; } = null!;

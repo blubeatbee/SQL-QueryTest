@@ -21,6 +21,11 @@ Database ER diagram comparison
 
 ![](Docs/Diagrams/db_er_2.svg)
 
+## Changes
+
+- No database junction tables (M-to-N) have been recreated in GymnasiumDbContext2.
+    - Instead uses `virtual` navigation properties.
+
 # LINQ queries
 
 A console application for testing various LINQ queries, as well as Repository and Service patterns.

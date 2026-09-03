@@ -9,28 +9,28 @@ namespace Source.Persistent
 	/// </summary>
 	public sealed class UnitOfWork : IUnitOfWork
 	{
-		private readonly GymnasiumDbContext context;
+		private readonly GymnasiumDbContext2 context;
 
 		/// <summary><inheritdoc cref="UnitOfWork"/></summary>
-		public UnitOfWork(GymnasiumDbContext context)
+		public UnitOfWork(GymnasiumDbContext2 context)
 		{
 			this.context = context;
-			this.Administrators = new AdministratorRepository(this.context);
+			//this.Administrators = new AdministratorRepository(this.context);
 			this.Employees = new EmployeeRepository(this.context);
-			this.Gradings = new GradingRepository(this.context);
-			this.Humans = new HumanRepository(this.context);
-			this.Principals = new PrincipalRepository(this.context);
+			//this.Gradings = new GradingRepository(this.context);
+			//this.Humans = new HumanRepository(this.context);
+			//this.Principals = new PrincipalRepository(this.context);
 			this.Students = new StudentRepository(this.context);
-			this.Teachers = new TeacherRepository(this.context);
+			//this.Teachers = new TeacherRepository(this.context);
 		}
 
-		public IAdministratorRepository Administrators { get; private set; }
+		//public IAdministratorRepository Administrators { get; private set; }
 		public IEmployeeRepository Employees { get; private set; }
-		public IGradingRepository Gradings { get; private set; }
-		public IHumanRepository Humans { get; private set; }
-		public IPrincipalRepository Principals { get; private set; }
+		//public IGradingRepository Gradings { get; private set; }z
+		//public IHumanRepository Humans { get; private set; }
+		//public IPrincipalRepository Principals { get; private set; }
 		public IStudentRepository Students { get; private set; }
-		public ITeacherRepository Teachers { get; private set; }
+		//public ITeacherRepository Teachers { get; private set; }
 
 		public int Save()
 		{

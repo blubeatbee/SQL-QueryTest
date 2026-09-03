@@ -1,7 +1,7 @@
 using Source.Menu.Components;
 using Source.Menu.Components.Base;
 using Source.Menu.Pages.Base;
-using Source.Services;
+using Source.Services.IServices;
 
 namespace Source.Menu.Pages
 {
@@ -9,9 +9,9 @@ namespace Source.Menu.Pages
 	///		Menu page that displays a, and allows for the writing of a, single student.
 	/// </summary>
 	/// <param name="studentServices">The service pattern object that accesses student table.</param>
-	public class StudentPage(StudentService studentServices) : BasePage
+	public class StudentPage(IStudentService studentServices) : BasePage
 	{
-		private readonly StudentService service = studentServices;
+		private readonly IStudentService service = studentServices;
 
 		protected sealed override IList<BaseComponent> PageContent { get; set; } = new List<BaseComponent>([
 			new Text($"Invalid Data"),
@@ -29,16 +29,15 @@ namespace Source.Menu.Pages
 
 			try
 			{
-				var student = service.GetStudentAsync(App.Id).Result;
+				var s = service.RetrieveStudentAsync(App.Id).Result;
 				pageContent.Add(new Text(
-					$"\n          {"ID"}: {student.HumanId}" +
-					$"\n         {"SSN"}: {student.Ssn.Insert(8, "-")}" +
-					$"\n        {"Name"}: {student.Surname}{student.Forname}{student.Midname ?? null}" +
-					$"\n       {"Class"}: {student.CyearId}{student.ClassId}" +
-					$"\n {"Enroll date"}: {student.DateEnroll}" +
-					$"\n   {"Quit date"}: {(student.DateQuit != null ? student.DateQuit : "--/--/----")}" +
-					$"\n   {"Is Active"}: {student.IsActive}" +
-					$"\n   {"Graduated"}: {student.IsGraduated ?? false}"
+					$"\n         {"ID"}: {s.StudentId}" +
+					$"\n        {"SSN"}: {s.Ssn}" +
+					$"\n       {"Name"}: {s.Surname}{s.Name}" +
+					$"\n      {"Class"}: {s.ClassId}" +
+					$"\n{"Enroll date"}: {s.DateEnrolled}" +
+					$"\n  {"Quit date"}: {(s.DateQuit != null ? s.DateQuit : "--/--/----")}" +
+					$"\n     {"Active"}: {s.IsActive}"
 					));
 			}
 			catch

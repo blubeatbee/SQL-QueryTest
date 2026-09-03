@@ -1,6 +1,5 @@
-using Microsoft.EntityFrameworkCore;
 using Source.Data;
-using Source.Models;
+using Source.Models.Gym2;
 using Source.Repositories.IRepositories;
 using System.Linq.Expressions;
 
@@ -8,47 +7,11 @@ namespace Source.Repositories
 {
 	public class StudentRepository : Repository<int, Student>, IRepository<int, Student>, IStudentRepository
 	{
-		public StudentRepository(GymnasiumDbContext context) : base(context)
+		public StudentRepository(GymnasiumDbContext2 context) : base(context)
 		{
 		}
 
-		public GymnasiumDbContext GymnasiumDbContext { get { return (GymnasiumDbContext)base.Context; } }
-
-		public async Task<Human> GetStudentAsync(int id)
-		{
-			var query = this.GymnasiumDbContext.Humans.Where(h => h.HumanId == id)
-				.Include(h => h.Student)
-					.ThenInclude(s => s!.Gradings)
-				.Include(h => h.Student)
-					.ThenInclude(s => s!.Gradings)
-						.ThenInclude(g => g!.Course);
-
-			return await query.FirstAsync();
-		}
-
-		public async Task<IList<Student>> GetStudentsWithGradesAsync()
-		{
-			var result = await this.GymnasiumDbContext.Students
-				.Include(s => s.Gradings)
-				.ThenInclude(g => g.Course)
-				.ToListAsync();
-			return result;
-		}
-
-		public async Task<IList<Human>> GetStudentsAsync()
-		{
-			var query = this.GymnasiumDbContext.Humans
-				.Where(h => h.Student != null).Include(h => h.Student);
-			return await query.AsNoTrackingWithIdentityResolution().ToListAsync();
-		}
-
-		public async Task<IList<Human>> GetStudentsAsync(Expression<Func<Human, bool>> predicate)
-		{
-			var query = this.GymnasiumDbContext.Humans.Where(predicate)
-				.Where(h => h.Student != null)
-				.Include(h => h.Student);
-			return await query.AsNoTrackingWithIdentityResolution().ToListAsync();
-		}
+		public GymnasiumDbContext2 GymnasiumDbContext2 { get { return (GymnasiumDbContext2)base.Context; } }
 
 	}
 }

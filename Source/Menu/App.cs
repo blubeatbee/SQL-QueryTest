@@ -32,7 +32,7 @@ namespace Source.Menu
 		///		Initialises the menu.
 		/// </summary>
 		/// <param name="dbContext">The database context. Cannot be decoupled from <see cref="GymnasiumDbContext"/>.</param>
-		internal static void Initialise(this GymnasiumDbContext dbContext)
+		internal static void Initialise(this GymnasiumDbContext2 dbContext)
 		{
 			using (var unitOfWork = new UnitOfWork(dbContext))
 			{
@@ -47,7 +47,7 @@ namespace Source.Menu
 					new Route("Employees", new EmployeesPage(employeeService)),
 					new Route("Employee", new EmployeePage(employeeService)),
 					new Route("NewEmployee", new CreateEmployeeFormPage(employeeService)),
-					new Route("Departments", new SchoolDepartmentsPage(employeeService)),
+					//new Route("Departments", new SchoolDepartmentsPage(employeeService)),
 					new Route("Error", ErrorPage.Instance)
 					],
 				"Error");
