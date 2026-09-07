@@ -16,7 +16,7 @@ namespace Source.Menu.Pages
 		protected sealed override IList<BaseComponent> PageContent { get; set; } = new List<BaseComponent>([
 			new Text($"Invalid Data"),
 			new NavLink("Return", "Students"),
-			new NavLink("Add New Grading to Student", "CreateGrade"),
+			new NavLink("Add New Grading to Student", "NewGrade"),
 			new Text(),
 			new Text($" {"Date Set",-10} | {"Grade",-5} | {"Course",-16} | {"Set by Teacher",-40}")
 			]);
@@ -26,6 +26,8 @@ namespace Source.Menu.Pages
 			var pageContent = new List<BaseComponent>();
 			pageContent.AddRange([
 				this.PageContent[1],
+				this.PageContent[2],
+				this.PageContent[3],
 				]);
 
 			try
@@ -41,9 +43,8 @@ namespace Source.Menu.Pages
 						$"\n  {"Quit date"}: {(s.DateQuit != null ? s.DateQuit : "--/--/----")}" +
 						$"\n     {"Active"}: {s.IsActive}"
 					),
-					this.PageContent[2],
 					this.PageContent[3],
-					this.PageContent[2],
+					this.PageContent[4],
 					]);
 
 				foreach (var g in s.Grades)

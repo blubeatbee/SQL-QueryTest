@@ -31,13 +31,13 @@ namespace Source.Menu.Pages
 		{
 			var pageContent = new List<BaseComponent>([
 				this.PageContent[0],
-				this.PageContent[1],
+				this.PageContent[2],
 				new Button($"     Add Grade: {this.newGradingValues["Grade"]}", AddValueGrade),
 				new Button($" Add Course Id: {this.newGradingValues["CourseId"]}", AddValueCourseId),
 				new Button($"Add Teacher Id: {this.newGradingValues["TeacherId"]}", AddValueTeacherId),
+				this.PageContent[2],
 				new Button($"Create New Grading with these Values", CreateNewGrading)
 				]);
-
 
 			return pageContent;
 		}

@@ -39,7 +39,7 @@ namespace Source.Menu
 					new Route("Title", TitlePage.Instance),
 					new Route("Students", new StudentsPage(appService.StudentService)),
 					new Route("Student", new StudentPage(appService.StudentService)),
-					new Route("", new AddGradingPage(appService)),
+					new Route("NewGrade", new AddGradingPage(appService)),
 					new Route("NewStudent", new CreateStudentFormPage(appService.StudentService)),
 					new Route("Employees", new EmployeesPage(appService.EmployeeService)),
 					new Route("Employee", new EmployeePage(appService.EmployeeService)),
