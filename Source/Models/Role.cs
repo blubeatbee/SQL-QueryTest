@@ -1,6 +1,6 @@
-namespace Source.Models.Gym2
+namespace Source.Models
 {
-	public class Role
+	public partial class Role
 	{
 		public int RoleId { get; set; }
 		public string RoleTitle { get; set; } = null!;
