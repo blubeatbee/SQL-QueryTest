@@ -28,7 +28,7 @@ namespace Source.Menu.Pages
 			new NavLink("Add new employee", "NewEmployee"),
 			new Text(),
 			new Text(
-				$"{"ID", 5} | {"SSN", -13} | {"Surname", -16} | {"Name", -32} | {"Role", -16} | " +
+				$"{"ID", 5} | {"SSN", -13} | {"Surname", -16} | {"Name", -24} | {"Role", -16} | " +
 				$"{"Salary",-12} | {"Hired on",-10} | {"Quit on",-10} | {"Active",-6} |"),
 			new Text(" Number of Currently Employed Gymnasium Personnel")
 		]);
@@ -43,16 +43,16 @@ namespace Source.Menu.Pages
 				this.PageContent[1],
 				this.PageContent[2],
 				this.PageContent[3],
-				this.PageContent[5],
-				new Text($" \tTeachers:       {this.employeeAmount["Teacher"]}"),
-				new Text($" \tAdministrators: {this.employeeAmount["Administrator"]}"),
-				new Text($" \tPrincipals:     {this.employeeAmount["Principal"]}"),
-				this.PageContent[3],
 				new Button($"Sort by: {(this.pageContentAscending ? "Ascending" : "Descending")}", ToggleSort),
 				new Button($"Show All Employees", SetFilterToAll),
 				new Button($"Show Teachers Only", SetFilterToTeacherOnly),
 				new Button($"Show Admins Only", SetFilterToAdminOnly),
 				new Button($"Show Principals Only", SetFilterToPrincipalOnly),
+				this.PageContent[3],
+				this.PageContent[5],
+				new Text($" \tTeachers:       {this.employeeAmount["Teacher"]}"),
+				new Text($" \tAdministrators: {this.employeeAmount["Administrator"]}"),
+				new Text($" \tPrincipals:     {this.employeeAmount["Principal"]}"),
 				this.PageContent[3],
 				this.PageContent[4],
 				this.PageContent[3]
@@ -69,8 +69,8 @@ namespace Source.Menu.Pages
 				foreach (var e in employeeList)
 				{
 					pageContent.Add(new DataLink(
-						$"{e.EmployeeId,4} | {e.Ssn,-13} | {e.Surname,-16} | {e.Name,-32} | {e.Role,-12} |" +
-						$"{e.Salary,12} | {e.DateHired,-10} | {e.DateQuit,-10} | {e.IsEmployed,-6} |",
+						$"{e.EmployeeId,4} | {e.Ssn,-13} | {e.Surname,-16} | {e.Name,-24} | {e.Role,-16} | " +
+						$"{e.Salary,-12} | {e.DateHired,-10} | {e.DateQuit,-10} | {e.IsEmployed,-6} |",
 						e.EmployeeId,
 						"Employee"
 					));

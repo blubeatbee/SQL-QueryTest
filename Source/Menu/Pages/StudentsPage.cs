@@ -22,7 +22,7 @@ namespace Source.Menu.Pages
 			new NavLink("Add new student", "NewStudent"),
 			new Text(),
 			new Text(
-				$"{"ID",5} | {"SSN",-13} | {"Surname",-16} | {"Name",-32} | {"Class",-7} | " +
+				$"{"ID",5} | {"SSN",-13} | {"Surname",-16} | {"Name",-24} | {"Class",-7} | " +
 				$"{"Enrolled",-10} | {"Quit on",-10} | {"Active",-6} |"),
 			]);
 
@@ -54,7 +54,7 @@ namespace Source.Menu.Pages
 				foreach (var e in studentList)
 				{
 					pageContent.Add(new DataLink(
-						$"{e.StudentId,4} | {e.Ssn,-13} | {e.Surname,-16} | {e.Name,-32} | {e.ClassId,-7} |" +
+						$"{e.StudentId,4} | {e.Ssn,-13} | {e.Surname,-16} | {e.Name,-24} | {e.ClassId,-7} | " +
 						$"{e.DateEnrolled,-10} | {e.DateQuit,-10} | {e.IsActive,-6} |",
 						e.StudentId,
 						"Student"

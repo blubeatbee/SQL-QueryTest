@@ -5,21 +5,15 @@ using Source.Services.IServices;
 
 namespace Source.Menu.Pages
 {
-	public class SchoolDepartmentsPage(IEmployeeService service) : BasePage
+	public class SchoolDepartmentsPage(ICourseService service) : BasePage
 	{
-		private readonly IEmployeeService service = service;
+		private readonly ICourseService service = service;
 
-		private Dictionary<string, int> employeeAmount = new()
-		{
-			{ "Teacher", 0 },
-			{ "Administrator", 0 },
-			{ "Principal", 0 },
-		};
+		private int courseAmount;
 
 		protected sealed override IList<BaseComponent> PageContent { get; set; } = new List<BaseComponent>([
-			new Text("Number of currently employed Gymnasium personnel"),
+			new NavLink("Return", "Title"),
 			new Text(),
-			new NavLink("Return", "Title")
 			]);
 
 		public sealed override IList<BaseComponent> GetPageContent()
@@ -28,21 +22,28 @@ namespace Source.Menu.Pages
 
 			List<BaseComponent> pageContent = [
 				this.PageContent[0],
-				new Text($"Teachers:       {this.employeeAmount["Teacher"]}"),
-				new Text($"Administrators: {this.employeeAmount["Administrator"]}"),
-				new Text($"Principals:     {this.employeeAmount["Principal"]}"),
+				this.PageContent[1],
+				new Text($" Number of Currently Active Courses: {this.courseAmount}"),
+				this.PageContent[1],
+				new Text($" {"Course",-18} | {"Course Period",-24} | {"Class",-7} | {"Class Period",-24} "),
+				this.PageContent[1],
 			];
 
-			pageContent.AddRange(this.PageContent[1], this.PageContent[2]);
+			var courses = this.service.RetrieveActiveCoursesAsync().Result.ToList();
+
+			foreach (var c in courses)
+			{
+				pageContent.Add(new Text(
+					$" {c.Title,-18} | {c.CourseStart + " - " + c.CourseEnd,-24} | {c.Class,-7} | {c.ClassStart + " - " + c.ClassEnd,-10} "
+					));
+			}
 
 			return pageContent;
 		}
 
 		private void Count()
 		{
-			this.employeeAmount["Teacher"] = this.service.NumberOfActiveEmployees(1).Result;
-			this.employeeAmount["Administrator"] = this.service.NumberOfActiveEmployees(2).Result;
-			this.employeeAmount["Principal"] = this.service.NumberOfActiveEmployees(3).Result;
+			this.courseAmount = this.service.NumberOfActiveCourses().Result;
 		}
 
 	}

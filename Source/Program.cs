@@ -9,16 +9,14 @@ namespace Source
 	{
 		static void Main(string[] args)
 		{
-			var optionsBuilder = new DbContextOptionsBuilder<GymnasiumDbContext2>();
+			//var config = new ConfigurationBuilder()
+			//	.SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+			//	.AddJsonFile("appsettings.json")
+			//	.Build();
 
-			var config = new ConfigurationBuilder()
-				.SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-				.AddJsonFile("appsettings.json")
-				.Build();
+			//var options = optionsBuilder.UseSqlServer(config.GetConnectionString("GymnasiumConnection2"));
 
-			var options = optionsBuilder.UseSqlServer(config.GetConnectionString("GymnasiumConnection2"));
-
-			using (var context = new GymnasiumDbContext2(options.Options))
+			using (var context = new Gymnasium2Context())
 			{
 				context.Initialise();
 			}

@@ -1,9 +1,9 @@
 using Source.Data;
 using Source.Menu.Components;
+using Source.Menu.Core;
 using Source.Menu.Pages;
 using Source.Menu.Routing;
 using Source.Menu.UI;
-using Source.Persistent;
 using Source.Services;
 
 namespace Source.Menu
@@ -13,9 +13,6 @@ namespace Source.Menu
 	/// </summary>
 	internal static class App
 	{
-		private static StudentService studentService = null!;
-		private static EmployeeService employeeService = null!;
-
 		/// <summary>The list of navigable routes. Navigating to a route displays its associated menu page.</summary>
 		internal static Router routes = null!;
 
@@ -32,22 +29,22 @@ namespace Source.Menu
 		///		Initialises the menu.
 		/// </summary>
 		/// <param name="dbContext">The database context. Cannot be decoupled from <see cref="GymnasiumDbContext"/>.</param>
-		internal static void Initialise(this GymnasiumDbContext2 dbContext)
+		internal static void Initialise(this Gymnasium2Context dbContext)
 		{
 			using (var unitOfWork = new UnitOfWork(dbContext))
 			{
-				App.studentService = new(unitOfWork);
-				App.employeeService = new(unitOfWork);
+				var appService = new AppService(unitOfWork);
 
 				App.routes = new([
 					new Route("Title", TitlePage.Instance),
-					new Route("Students", new StudentsPage(studentService)),
-					new Route("Student", new StudentPage(studentService)),
-					new Route("NewStudent", new CreateStudentFormPage(studentService)),
-					new Route("Employees", new EmployeesPage(employeeService)),
-					new Route("Employee", new EmployeePage(employeeService)),
-					new Route("NewEmployee", new CreateEmployeeFormPage(employeeService)),
-					//new Route("Departments", new SchoolDepartmentsPage(employeeService)),
+					new Route("Students", new StudentsPage(appService.StudentService)),
+					new Route("Student", new StudentPage(appService.StudentService)),
+					new Route("", new AddGradingPage(appService)),
+					new Route("NewStudent", new CreateStudentFormPage(appService.StudentService)),
+					new Route("Employees", new EmployeesPage(appService.EmployeeService)),
+					new Route("Employee", new EmployeePage(appService.EmployeeService)),
+					new Route("NewEmployee", new CreateEmployeeFormPage(appService.EmployeeService)),
+					new Route("Courses", new SchoolDepartmentsPage(appService.CourseService)),
 					new Route("Error", ErrorPage.Instance)
 					],
 				"Error");
