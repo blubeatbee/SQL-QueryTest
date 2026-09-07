@@ -1,6 +1,7 @@
 using Source.DTO;
-using Source.Persistent;
+using Source.Menu.Core;
 using Source.Services.IServices;
+using System.Linq.Expressions;
 
 namespace Source.Services
 {
@@ -10,7 +11,7 @@ namespace Source.Services
 
 		public async Task<EmployeeGetDTO> RetrieveEmployeeAsync(int id)
 		{
-			var e = await this.unitOfWork.Employees.GetAsync(id) ?? throw new ArgumentNullException(nameof(id));
+			var e = await this.unitOfWork.Employees.GetEmployeeWithRoleAsync(id) ?? throw new ArgumentNullException(nameof(id));
 
 			var employee = new EmployeeGetDTO
 			{
@@ -32,8 +33,8 @@ namespace Source.Services
 		public async Task<IList<EmployeeGetDTO>> RetrieveEmployeesByRoleAsync(short employeeRole)
 		{
 			var employees = (employeeRole == 0)
-				? await this.unitOfWork.Employees.GetAllAsync()
-				: await this.unitOfWork.Employees.GetByFilterAsync(e => e.RoleId == employeeRole)
+				? await this.unitOfWork.Employees.GetEmployeesWithRoleAsync()
+				: await this.unitOfWork.Employees.GetEmployeesWithRoleAsync(e => e.RoleId == employeeRole)
 				?? throw new ArgumentNullException();
 
 			var employeeList = new List<EmployeeGetDTO>();
@@ -46,7 +47,7 @@ namespace Source.Services
 					Ssn = e.Ssn,
 					Surname = e.Surname,
 					Name = e.Name,
-					Role = e.Role == null ? string.Empty : e.Role.RoleTitle,
+					Role = e.Role!.RoleTitle ?? string.Empty,
 					Tasks = e.Tasks ?? string.Empty,
 					Salary = e.Salary,
 					DateHired = e.DateHired,
@@ -56,6 +57,34 @@ namespace Source.Services
 			}
 
 			return employeeList;
+		}
+
+		public async Task<IList<TeacherNameGetDTO>> RetrieveActiveTeachersAsync()
+		{
+			var teachers = await this.unitOfWork.Employees.GetTeachersAsync(t => t.IsEmployed == true)
+				?? throw new ArgumentNullException();
+
+			List<TeacherNameGetDTO> teachersList = new();
+
+			try
+			{
+				foreach (var t in teachers)
+				{
+					teachersList.Add(new TeacherNameGetDTO()
+					{
+						EmployeeId = t.EmployeeId,
+						Ssn = t.Ssn,
+						Surname = t.Surname,
+						Name = t.Name,
+					});
+				}
+			}
+			catch
+			{
+				throw;
+			}
+
+			return teachersList;
 		}
 
 		public async Task<int> NumberOfActiveEmployees(short employeeRole)

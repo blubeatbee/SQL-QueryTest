@@ -1,5 +1,5 @@
 using Source.DTO;
-using Source.Persistent;
+using Source.Menu.Core;
 using Source.Services.IServices;
 
 namespace Source.Services
@@ -10,7 +10,8 @@ namespace Source.Services
 
 		public async Task<StudentGetDTO> RetrieveStudentAsync(int id)
 		{
-			var s = await this.unitOfWork.Students.GetAsync(id) ?? throw new ArgumentNullException(nameof(id));
+			var s = await this.unitOfWork.Students.GetStudentWithGradesAsync(id)
+				?? throw new ArgumentNullException(nameof(id));
 
 			var student = new StudentGetDTO()
 			{
@@ -24,15 +25,19 @@ namespace Source.Services
 				IsActive = s.IsActive,
 			};
 
-			foreach (var g in s.Gradings)
+			if (s.Gradings.Count > 0)
 			{
-				student.Grades.Add(new StudentGetGradeDTO()
+				foreach (var g in s.Gradings)
 				{
-					CourseTitle = g.Course!.Title ?? string.Empty,
-					Grading = g.Grade,
-					DateSet = g.DateSet,
-					TeacherName = (g.Teacher!.Surname + g.Teacher!.Name) ?? string.Empty,
-				});
+					var teacherName = g.Teacher!.Surname + " " + g.Teacher!.Name;
+					student.Grades.Add(new StudentGetGradeDTO()
+					{
+						CourseTitle = g.Course!.Title ?? "N/A",
+						Grading = g.Grade,
+						DateSet = g.DateSet,
+						TeacherName = (string.IsNullOrWhiteSpace(teacherName)) ? "N/A" : teacherName,
+					});
+				}
 			}
 
 			return student;
@@ -88,5 +93,32 @@ namespace Source.Services
 			}
 		}
 
+		public async void AddGradingToStudent(GradingCreateDTO newGrade)
+		{
+			using (var transaction = await this.unitOfWork.BeginTransactionAsync())
+			{
+				try
+				{
+					this.unitOfWork.Gradings.Add(new()
+					{
+						Grade = newGrade.Grade,
+						DateSet = newGrade.DateSet,
+						CourseId = newGrade.CourseId,
+						StudentId = newGrade.StudentId,
+						TeacherId = newGrade.TeacherId,
+					});
+
+					_ = await this.unitOfWork.SaveAsync();
+
+					await transaction.CommitAsync();
+				}
+				catch (Exception)
+				{
+					await transaction.RollbackAsync();
+					throw;
+				}
+
+			}
+		}
 	}
 }
