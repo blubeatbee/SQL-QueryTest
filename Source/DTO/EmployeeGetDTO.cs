@@ -11,7 +11,7 @@ namespace Source.DTO
 		public decimal Salary { get; set; }
 		public DateOnly DateHired { get; set; }
 		public DateOnly? DateQuit { get; set; }
-		public bool IsEmployed { get; set => field = DateQuit != null && DateQuit < DateOnly.FromDateTime(DateTime.Now); }
+		public bool IsEmployed { get; set => field = DateQuit == null; }
 
 	}
 }
