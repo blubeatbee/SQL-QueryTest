@@ -22,6 +22,7 @@ namespace Source.Repositories.IRepositories
 	///			var entity = await collection.GetAsync(1);
 	///			entity.Name = "New name";
 	///			entity.Age = 23;
+	///			unitOfWork.Save();
 	///		</code></example>
 	/// </remarks>
 	/// <typeparam name="TKey">The data type of the id property (i.e. the primary key in SQL databases) of <typeparamref name="TEntity"/>.</typeparam>

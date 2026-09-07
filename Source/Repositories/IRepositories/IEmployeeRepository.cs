@@ -1,12 +1,15 @@
-using Source.Models.Gym2;
+using Source.Models;
 using System.Linq.Expressions;
 
 namespace Source.Repositories.IRepositories
 {
 	public interface IEmployeeRepository : IRepository<int, Employee>
 	{
+		Task<Employee?> GetEmployeeWithRoleAsync(int id);
+		Task<IList<Employee>> GetEmployeesWithRoleAsync();
+		Task<IList<Employee>> GetEmployeesWithRoleAsync(Expression<Func<Employee, bool>> predicate);
 		Task<Employee?> GetTeacherAsync(int id);
-		Task<IList<Employee>> GetAllTeachersAsync();
-		Task<IList<Employee>> GetTeachersByFilterAsync(Expression<Func<Employee, bool>> predicate);
+		Task<IList<Employee>> GetTeachersAsync();
+		Task<IList<Employee>> GetTeachersAsync(Expression<Func<Employee, bool>> predicate);
 	}
 }

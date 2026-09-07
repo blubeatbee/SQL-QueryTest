@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Source.Data;
-using Source.Models.Gym2;
+using Source.Models;
 using Source.Repositories.IRepositories;
 using System.Linq.Expressions;
 
@@ -8,30 +8,49 @@ namespace Source.Repositories
 {
 	public class EmployeeRepository : Repository<int, Employee>, IRepository<int, Employee>, IEmployeeRepository
 	{
-		public EmployeeRepository(GymnasiumDbContext2 context) : base(context)
+		public EmployeeRepository(Gymnasium2Context context) : base(context)
 		{
 		}
 
-		public GymnasiumDbContext2 GymnasiumDbContext2 { get { return (GymnasiumDbContext2)base.Context; } }
+		public Gymnasium2Context Gymnasium2DbContext { get { return (Gymnasium2Context)base.Context; } }
 
+		public async Task<Employee?> GetEmployeeWithRoleAsync(int id)
+		{
+			return await this.Gymnasium2DbContext.Employees.Include(e => e.Role)
+				.FirstOrDefaultAsync(e => e.EmployeeId == id);
+		}
+
+		public async Task<IList<Employee>> GetEmployeesWithRoleAsync()
+		{
+			return await this.Gymnasium2DbContext.Employees.Include(e => e.Role)
+				.AsNoTrackingWithIdentityResolution().ToListAsync();
+		}
+		public async Task<IList<Employee>> GetEmployeesWithRoleAsync(Expression<Func<Employee, bool>> predicate)
+		{
+			return await this.Gymnasium2DbContext.Employees.Include(e => e.Role)
+				.Where(predicate)
+				.AsNoTrackingWithIdentityResolution()
+				.ToListAsync();
+		}
 
 		public async Task<Employee?> GetTeacherAsync(int id)
 		{
-			var result = this.GymnasiumDbContext2.Employees.Where(e => e.RoleId == 1);
-			return await result.FirstOrDefaultAsync(e => e.EmployeeId == id);
+			return await this.Gymnasium2DbContext.Employees.Where(e => e.RoleId == 1)
+				.FirstOrDefaultAsync(e => e.EmployeeId == id);
 		}
 
-		public async Task<IList<Employee>> GetAllTeachersAsync()
+		public async Task<IList<Employee>> GetTeachersAsync()
 		{
-			var query = this.GymnasiumDbContext2.Employees.Where(e => e.RoleId == 1);
-			return await query.AsNoTrackingWithIdentityResolution().ToListAsync();
+			return await this.Gymnasium2DbContext.Employees.Where(e => e.RoleId == 1)
+				.AsNoTrackingWithIdentityResolution().ToListAsync();
 		}
 
-		public async Task<IList<Employee>> GetTeachersByFilterAsync(Expression<Func<Employee, bool>> predicate)
+		public async Task<IList<Employee>> GetTeachersAsync(Expression<Func<Employee, bool>> predicate)
 		{
-			var query = this.GymnasiumDbContext2.Employees.Where(e => e.RoleId == 1)
-				.Where(predicate);
-			return await query.AsNoTrackingWithIdentityResolution().ToListAsync();
+			return await this.Gymnasium2DbContext.Employees.Where(e => e.RoleId == 1)
+				.Where(predicate)
+				.AsNoTrackingWithIdentityResolution()
+				.ToListAsync();
 		}
 	}
 }
